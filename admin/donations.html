@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bağışlar - Destifo Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-shield-halved"></i> <span>Destifo Admin</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="nav-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="products.html" class="nav-item">
+                    <i class="fa-solid fa-box"></i>
+                    <span>Ürünler</span>
+                </a>
+                <a href="donations.html" class="nav-item active">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Bağışlar</span>
+                </a>
+                <a href="orders.html" class="nav-item">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span>Siparişler</span>
+                </a>
+                <a href="../index.html" class="nav-item"
+                    style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>Siteye Git</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Bağış Yönetimi</h1>
+                <div class="admin-profile">
+                    <span id="adminName">Admin</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Total Donation Card -->
+                <div class="stats-grid" style="margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Toplam Bağış</h3>
+                            <i class="fa-solid fa-hand-holding-heart donations"></i>
+                        </div>
+                        <div class="stat-card-value" id="totalDonation">0 TL</div>
+                    </div>
+                </div>
+
+                <div class="admin-table-container">
+                    <div class="table-header">
+                        <h2>Bağış Geçmişi</h2>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Kullanıcı</th>
+                                <th>Sipariş Tutarı</th>
+                                <th>Bağış Tutarı</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donationsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'index.html';
+        }
+
+        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'index.html';
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function loadDonations() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/donations`);
+                const data = await response.json();
+
+                document.getElementById('totalDonation').textContent = data.total;
+
+                const tbody = document.getElementById('donationsTable');
+
+                if (data.donations.length > 0) {
+                    tbody.innerHTML = data.donations.map(donation => `
+                        <tr>
+                            <td><strong>#${donation.id}</strong></td>
+                            <td>${donation.first_name ? donation.first_name + ' ' + (donation.last_name || '') : donation.email || 'Misafir'}</td>
+                            <td>${donation.total_amount}</td>
+                            <td><strong style="color: #27ae60">${donation.donation_amount}</strong></td>
+                            <td>${formatDate(donation.created_at)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fa-solid fa-hand-holding-heart"></i><br>Henüz bağış yok</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading donations:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDonations);
+    </script>
+</body>
+
+</html>

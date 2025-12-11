@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Ürün Detayı - Destifo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/products.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <a href="index.html" style="display: flex; align-items: center; color: inherit;">
+                    <i class="fa-solid fa-heart logo-icon"></i>
+                    <span class="logo-text">Destifo</span>
+                </a>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <a href="account.html" class="action-item">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Hesabım</span>
+                </a>
+                <a href="favorites.html" class="action-item">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Favorilerim</span>
+                </a>
+                <a href="cart.html" class="action-item">
+                    <div class="cart-icon-wrapper">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    <span>Sepetim</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Section -->
+    <nav class="main-nav">
+        <div class="container nav-inner">
+            <a href="category.html?cat=iyilik" class="nav-item special-item"><i
+                    class="fa-solid fa-hand-holding-heart"></i> İyilik Fırsatları</a>
+            <a href="category.html?cat=kadin" class="nav-item">Kadın</a>
+            <a href="category.html?cat=erkek" class="nav-item">Erkek</a>
+            <a href="category.html?cat=cocuk" class="nav-item">Çocuk & Bebek</a>
+            <a href="category.html?cat=ayakkabi" class="nav-item">Ayakkabı & Çanta</a>
+            <a href="category.html?cat=aksesuar" class="nav-item">Saat & Aksesuar</a>
+            <a href="category.html?cat=kozmetik" class="nav-item">Kozmetik</a>
+            <a href="category.html?cat=evyasam" class="nav-item">Ev & Yaşam</a>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs container">
+        <a href="index.html">Anasayfa</a> <i class="fa-solid fa-chevron-right"></i>
+        <a href="#">Giyim</a> <i class="fa-solid fa-chevron-right"></i>
+        <a href="#">Sweatshirt</a> <i class="fa-solid fa-chevron-right"></i>
+        <span class="current" id="breadcrumb-current">Ürün Detayı</span>
+    </div>
+
+    <!-- Product Detail Section -->
+    <section class="product-detail-section container">
+        <div class="product-gallery">
+            <div class="thumbnails">
+                <div class="thumb active">
+                    <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2070&auto=format&fit=crop"
+                        alt="Thumbnail 1">
+                </div>
+                <!-- Using similar styled images for variation -->
+                <div class="thumb">
+                    <img src="https://images.unsplash.com/photo-1515347619252-60a6bf4fffce?q=80&w=2069&auto=format&fit=crop"
+                        alt="Thumbnail 2">
+                </div>
+                <div class="thumb">
+                    <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=2005&auto=format&fit=crop"
+                        alt="Thumbnail 3">
+                </div>
+            </div>
+            <div class="main-image">
+                <img id="product-image-main"
+                    src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2070&auto=format&fit=crop"
+                    alt="Main Product Image">
+                <button class="favorite-btn"><i class="fa-solid fa-heart"></i></button>
+            </div>
+        </div>
+
+        <div class="product-info">
+            <h4 class="info-brand" id="product-brand">GÖNÜLPAZARI BASIC</h4>
+            <h1 class="info-title" id="product-title">Organik Pamuklu Unisex Sweatshirt - Antrasit</h1>
+
+            <div class="info-rating">
+                <div class="stars">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <span class="rating-text" id="product-rating-count">(124 Değerlendirme)</span>
+            </div>
+
+            <div class="info-price">
+                <span class="current-price" id="product-price">899,90 TL</span>
+                <span class="old-price" id="product-old-price">1.250,00 TL</span>
+            </div>
+
+            <div class="donation-box">
+                <i class="fa-solid fa-hand-holding-heart box-icon"></i>
+                <div class="box-content">
+                    <div class="box-text">
+                        Bu ürünün gelirinin <strong>%15'i LÖSEV'e</strong> bağışlanacaktır.
+                    </div>
+                    <div class="donation-badge">
+                        <i class="fa-solid fa-wallet"></i> Tahmini Bağış Tutarı: 135,00 TL
+                    </div>
+                </div>
+                <div class="box-bg-shape"></div>
+            </div>
+
+
+            <!-- Dynamic Variants Container - Will be populated by JS -->
+            <div id="variants-container" style="margin: 20px 0;">
+                <!-- Variant option groups will be dynamically inserted here -->
+            </div>
+
+            <!-- Stock Status -->
+            <div id="stock-status" style="margin-bottom: 15px; font-size: 14px; font-weight: 500;">
+                <!-- Will show stock info after variant selection -->
+            </div>
+
+            <div class="product-actions">
+                <button class="add-cart-large"><i class="fa-solid fa-cart-shopping"></i> SEPETE EKLE</button>
+                <button class="buy-now-btn"><i class="fa-solid fa-heart"></i> HEMEN AL VE DESTEK OL</button>
+            </div>
+
+            <div class="assurance-icons">
+                <div class="assurance-item">
+                    <div class="icon-circle"><i class="fa-solid fa-truck"></i></div>
+                    <span>Hızlı Teslimat</span>
+                </div>
+                <div class="assurance-item">
+                    <div class="icon-circle"><i class="fa-solid fa-rotate-left"></i></div>
+                    <span>Ücretsiz İade</span>
+                </div>
+                <div class="assurance-item">
+                    <div class="icon-circle"><i class="fa-solid fa-shield-halved"></i></div>
+                    <span>Güvenli Ödeme</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Tabs Section -->
+    <section class="product-tabs-section container">
+        <div class="tabs-header">
+            <button class="tab-btn active" data-tab="features">Ürün Özellikleri</button>
+            <button class="tab-btn" data-tab="donation">Bağış ve Etki</button>
+            <button class="tab-btn" data-tab="reviews">Değerlendirmeler (<span id="review-count">124</span>)</button>
+        </div>
+
+        <!-- Tab 1: Ürün Özellikleri -->
+        <div class="tab-content" id="tab-features">
+            <h3 class="content-title">Ürün Açıklaması</h3>
+            <p id="product-description">Sürdürülebilir moda anlayışıyla tasarlanan bu sweatshirt, %100 organik pamuk
+                ipliklerinden üretilmiştir. Cildinize nefes aldıran dokusu ve modern kesimi ile gün boyu konfor sunar.
+                Hem spor şıklığınızı tamamlamak hem de doğaya saygılı bir tercih yapmak için idealdir.</p>
+
+            <div class="features-grid" id="product-features">
+                <div class="feature-row">
+                    <span class="feature-label">Kumaş Tipi:</span>
+                    <span class="feature-value">Örme</span>
+                </div>
+                <div class="feature-row">
+                    <span class="feature-label">Materyal:</span>
+                    <span class="feature-value">%100 Organik Pamuk</span>
+                </div>
+                <div class="feature-row">
+                    <span class="feature-label">Kalıp:</span>
+                    <span class="feature-value">Regular Fit</span>
+                </div>
+                <div class="feature-row">
+                    <span class="feature-label">Yaka Tipi:</span>
+                    <span class="feature-value">Kapüşonlu</span>
+                </div>
+                <div class="feature-row">
+                    <span class="feature-label">Kol Boyu:</span>
+                    <span class="feature-value">Uzun Kol</span>
+                </div>
+                <div class="feature-row">
+                    <span class="feature-label">Renk:</span>
+                    <span class="feature-value">Antrasit</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Bağış ve Etki -->
+        <div class="tab-content" id="tab-donation" style="display: none;">
+            <h3 class="content-title">Bu Ürünle Yapılan Bağış</h3>
+
+            <div class="donation-impact-card">
+                <div class="impact-header">
+                    <div class="impact-icon">
+                        <i class="fa-solid fa-hand-holding-heart"></i>
+                    </div>
+                    <div class="impact-info">
+                        <h4>LÖSEV</h4>
+                        <p>Lösemili Çocuklar Vakfı</p>
+                    </div>
+                </div>
+                <div class="impact-stats">
+                    <div class="impact-stat">
+                        <span class="stat-number">%15</span>
+                        <span class="stat-text">Bağış Oranı</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="stat-number" id="donation-amount">135,00 TL</span>
+                        <span class="stat-text">Tahmini Bağış</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="donation-description">
+                <h4><i class="fa-solid fa-circle-info"></i> Bağışınız Ne İşe Yarıyor?</h4>
+                <ul class="impact-list">
+                    <li><i class="fa-solid fa-check"></i> Lösemili çocukların tedavi masraflarına katkı sağlar</li>
+                    <li><i class="fa-solid fa-check"></i> Ailelerin barınma ve ulaşım giderlerini destekler</li>
+                    <li><i class="fa-solid fa-check"></i> Psikolojik destek hizmetlerinin sürdürülmesine yardımcı olur
+                    </li>
+                    <li><i class="fa-solid fa-check"></i> Eğitim programlarının devam etmesini sağlar</li>
+                </ul>
+            </div>
+
+            <div class="total-donations-banner">
+                <i class="fa-solid fa-heart"></i>
+                <div>
+                    <span class="banner-title">Bu üründen şimdiye kadar toplanan bağış:</span>
+                    <span class="banner-amount">24.580,00 TL</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Değerlendirmeler -->
+        <div class="tab-content" id="tab-reviews" style="display: none;">
+            <div class="reviews-summary">
+                <div class="rating-overview">
+                    <div class="rating-big">
+                        <span class="rating-number">4.8</span>
+                        <div class="rating-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-alt"></i>
+                        </div>
+                        <span class="rating-total"><span id="review-count-2">124</span> değerlendirme</span>
+                    </div>
+                    <div class="rating-bars">
+                        <div class="rating-bar-row">
+                            <span>5 <i class="fa-solid fa-star"></i></span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 75%"></div>
+                            </div>
+                            <span>93</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>4 <i class="fa-solid fa-star"></i></span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 18%"></div>
+                            </div>
+                            <span>22</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>3 <i class="fa-solid fa-star"></i></span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 5%"></div>
+                            </div>
+                            <span>6</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>2 <i class="fa-solid fa-star"></i></span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 2%"></div>
+                            </div>
+                            <span>2</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>1 <i class="fa-solid fa-star"></i></span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 1%"></div>
+                            </div>
+                            <span>1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reviews-list">
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">A</div>
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Ahmet Y.</span>
+                            <span class="review-date">15 Kasım 2024</span>
+                        </div>
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">Harika bir ürün! Kalitesi çok iyi ve üstelik bağış yaparak da iyi bir işe
+                        destek olmuş oldum. Kesinlikle tavsiye ederim.</p>
+                    <div class="review-helpful">
+                        <button><i class="fa-solid fa-thumbs-up"></i> Faydalı (12)</button>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">M</div>
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Merve K.</span>
+                            <span class="review-date">10 Kasım 2024</span>
+                        </div>
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">Kumaşı çok yumuşak, kesimi tam istediğim gibi. Kargo da çok hızlı geldi.
+                        Bağış konsepti de harika!</p>
+                    <div class="review-helpful">
+                        <button><i class="fa-solid fa-thumbs-up"></i> Faydalı (8)</button>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">E</div>
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Emre S.</span>
+                            <span class="review-date">5 Kasım 2024</span>
+                        </div>
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-regular fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">Ürün güzel ama beden biraz büyük geldi. Bir beden küçük almanızı öneririm.
+                        Bağış için teşekkürler!</p>
+                    <div class="review-helpful">
+                        <button><i class="fa-solid fa-thumbs-up"></i> Faydalı (5)</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="load-more-reviews">Daha Fazla Yorum Göster</button>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Destifo</span>
+                </div>
+                <p class="footer-desc">Türkiye'nin en büyük sosyal sorumluluk pazar yeri. Alışveriş alışkanlıklarını
+                    iyiliğe dönüştürüyoruz.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Destifo</h4>
+                <ul>
+                    <li><a href="#">Hakkımızda</a></li>
+                    <li><a href="#">Kariyer</a></li>
+                    <li><a href="#">Sürdürülebilirlik</a></li>
+                    <li><a href="#">İletişim</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Müşteri Hizmetleri</h4>
+                <ul>
+                    <li><a href="#">Sıkça Sorulan Sorular</a></li>
+                    <li><a href="#">Canlı Destek</a></li>
+                    <li><a href="#">İade ve İptal</a></li>
+                    <li><a href="#">İşlem Rehberi</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col campaigns-col">
+                <h4>Kampanyalar</h4>
+                <div class="footer-campaign-card">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <div>
+                        <span>Eğitim Seferberliği</span>
+                        <a href="#">Detaylı Bilgi ></a>
+                    </div>
+                </div>
+                <div class="footer-campaign-card">
+                    <i class="fa-solid fa-paw"></i>
+                    <div>
+                        <span>Can Dostlar</span>
+                        <a href="#">Detaylı Bilgi ></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom container">
+            <div class="copyright">© 2024 Destifo Teknoloji A.Ş. Tüm hakları saklıdır.</div>
+            <div class="footer-links">
+                <a href="#">Gizlilik Politikası</a>
+                <a href="#">Kullanım Koşulları</a>
+                <a href="#">Çerez Politikası</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/products_data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/product-details.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

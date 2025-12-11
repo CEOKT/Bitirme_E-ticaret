@@ -1,0 +1,56 @@
+Time: 2025-12-11T15:15:16.599Z
+Error: no such column: main_category
+Stack: SqliteError: no such column: main_category
+    at Database.prepare (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\server.js:1243:12
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:284:15
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:365:14)
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:421:3)
+
+Time: 2025-12-11T15:15:30.268Z
+Error: no such column: main_category
+Stack: SqliteError: no such column: main_category
+    at Database.prepare (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\server.js:1243:12
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:284:15
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:365:14)
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:421:3)
+
+Time: 2025-12-11T15:18:09.256Z
+Error: no such column: main_category
+Stack: SqliteError: no such column: main_category
+    at Database.prepare (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\server.js:1243:12
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:284:15
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:365:14)
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:421:3)
+
+Time: 2025-12-11T15:18:25.979Z
+Error: no such column: main_category
+Stack: SqliteError: no such column: main_category
+    at Database.prepare (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\server.js:1243:12
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\layer.js:95:5)
+    at D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:284:15
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:365:14)
+    at param (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (D:\MasaüstüDepo\Projeler\Bitirme_WebSite\node_modules\express\lib\router\index.js:421:3)
+

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepetim - Destifo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/products.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                    <i class="fa-solid fa-heart logo-icon"></i>
+                    <span class="logo-text">Destifo</span>
+                </a>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <a href="account.html" class="action-item">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Hesabım</span>
+                </a>
+                <a href="favorites.html" class="action-item">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Favorilerim</span>
+                </a>
+                <a href="cart.html" class="action-item">
+                    <div class="cart-icon-wrapper">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    <span>Sepetim</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Section -->
+    <nav class="main-nav">
+        <div class="container nav-inner">
+            <a href="#" class="nav-item special-item"><i class="fa-solid fa-hand-holding-heart"></i> İyilik
+                Fırsatları</a>
+            <a href="#" class="nav-item">Kadın</a>
+            <a href="#" class="nav-item">Erkek</a>
+            <a href="#" class="nav-item">Çocuk & Bebek</a>
+            <a href="#" class="nav-item">Ayakkabı & Çanta</a>
+            <a href="#" class="nav-item">Saat & Aksesuar</a>
+            <a href="#" class="nav-item">Kozmetik</a>
+            <a href="#" class="nav-item">Ev & Yaşam</a>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs container">
+        <a href="index.html">Anasayfa</a> <i class="fa-solid fa-chevron-right"></i>
+        <span class="current">Sepetim</span>
+    </div>
+
+    <!-- Cart Section -->
+    <section class="cart-section container">
+        <div class="cart-content">
+            <div class="cart-items-wrapper">
+                <h2 class="section-title">Sepetim</h2>
+
+                <div id="cart-items" class="cart-items">
+                    <!-- Cart items will be loaded here by JavaScript -->
+                </div>
+
+                <div id="empty-cart" class="empty-state" style="display: none;">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <h3>Sepetiniz Boş</h3>
+                    <p>Sepetinizde henüz ürün bulunmuyor. Alışverişe başlamak için ürünlerimize göz atın.</p>
+                    <a href="index.html" class="btn-primary">Alışverişe Başla</a>
+                </div>
+            </div>
+
+            <div class="cart-summary" id="cart-summary">
+                <h3>Sipariş Özeti</h3>
+                <div class="summary-row">
+                    <span>Ürün Toplamı</span>
+                    <span id="subtotal">0,00 TL</span>
+                </div>
+                <div class="summary-row">
+                    <span>Kargo</span>
+                    <span class="free-shipping">Ücretsiz</span>
+                </div>
+                <div class="summary-row donation-row">
+                    <span><i class="fa-solid fa-heart"></i> Toplam Bağış</span>
+                    <span id="donation-total">0,00 TL</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row total-row">
+                    <span>Genel Toplam</span>
+                    <span id="grand-total">0,00 TL</span>
+                </div>
+                <button class="checkout-btn">
+                    <i class="fa-solid fa-lock"></i> Güvenli Ödemeye Geç
+                </button>
+                <p class="checkout-note">
+                    <i class="fa-solid fa-shield-halved"></i> 256-bit SSL ile güvenli ödeme
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Destifo</span>
+                </div>
+                <p class="footer-desc">Türkiye'nin en büyük sosyal sorumluluk pazar yeri. Alışveriş alışkanlıklarını
+                    iyiliğe dönüştürüyoruz.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Destifo</h4>
+                <ul>
+                    <li><a href="#">Hakkımızda</a></li>
+                    <li><a href="#">Kariyer</a></li>
+                    <li><a href="#">Sürdürülebilirlik</a></li>
+                    <li><a href="#">İletişim</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Müşteri Hizmetleri</h4>
+                <ul>
+                    <li><a href="#">Sıkça Sorulan Sorular</a></li>
+                    <li><a href="#">Canlı Destek</a></li>
+                    <li><a href="#">İade ve İptal</a></li>
+                    <li><a href="#">İşlem Rehberi</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col campaigns-col">
+                <h4>Kampanyalar</h4>
+                <div class="footer-campaign-card">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <div>
+                        <span>Eğitim Seferberliği</span>
+                        <a href="#">Detaylı Bilgi ></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom container">
+            <div class="copyright">© 2024 Destifo Teknoloji A.Ş. Tüm hakları saklıdır.</div>
+            <div class="footer-links">
+                <a href="#">Gizlilik Politikası</a>
+                <a href="#">Kullanım Koşulları</a>
+                <a href="#">Çerez Politikası</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/products_data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/favorites.js"></script>
+    <script>
+        // Render cart page
+        document.addEventListener('DOMContentLoaded', () => {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const emptyCart = document.getElementById('empty-cart');
+            const cartSummary = document.getElementById('cart-summary');
+            const subtotalEl = document.getElementById('subtotal');
+            const donationEl = document.getElementById('donation-total');
+            const grandTotalEl = document.getElementById('grand-total');
+
+            async function renderCart() {
+                let items = [];
+                let isApi = false;
+
+                if (window.CartAPI) {
+                    try {
+                        items = await window.CartAPI.getItems();
+                        isApi = true;
+                    } catch (e) {
+                        // Fallback to local
+                        items = Cart.getItems();
+                        isApi = false;
+                    }
+                } else {
+                    items = Cart.getItems();
+                }
+
+                if (items.length === 0) {
+                    cartItemsContainer.style.display = 'none';
+                    cartSummary.style.display = 'none';
+                    emptyCart.style.display = 'flex';
+                    return;
+                }
+
+                cartItemsContainer.style.display = 'block';
+                cartSummary.style.display = 'block';
+                emptyCart.style.display = 'none';
+
+                let subtotal = 0;
+                let html = '';
+
+                items.forEach(item => {
+                    let product;
+
+                    if (isApi) {
+                        // Item from API contains product details directly
+                        product = {
+                            id: item.product_id,
+                            title: item.title,
+                            brand: item.brand,
+                            price: item.price,
+                            image: item.image,
+                            quantity: item.quantity,
+                            cartItemId: item.id
+                        };
+                    } else {
+                        // Item from LocalStorage contains only productId, need lookup
+                        const p = products.find(p => p.id === item.productId);
+                        if (p) {
+                            product = {
+                                ...p,
+                                quantity: item.quantity
+                            };
+                        }
+                    }
+
+                    if (product) {
+                        let priceNum;
+                        let displayPrice;
+
+                        if (typeof product.price === 'number') {
+                            priceNum = product.price;
+                            displayPrice = priceNum.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+                        } else {
+                            // Assume string "899,90 TL"
+                            priceNum = parseFloat(product.price.replace('.', '').replace(',', '.').replace(' TL', ''));
+                            displayPrice = product.price;
+                        }
+
+                        const itemTotal = priceNum * product.quantity;
+                        subtotal += itemTotal;
+
+                        // Get selected variants from API item
+                        const selectedColor = item.selected_color || '';
+                        const selectedSize = item.selected_size || '';
+                        const selectedMemory = item.selected_memory || '';
+
+                        let variantHtml = '';
+                        if (selectedColor) variantHtml += `<span class="variant-badge" style="background:#e74c3c;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Renk: ${selectedColor}</span>`;
+                        if (selectedSize) variantHtml += `<span class="variant-badge" style="background:#3498db;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Beden: ${selectedSize}</span>`;
+                        if (selectedMemory) variantHtml += `<span class="variant-badge" style="background:#9b59b6;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Hafıza: ${selectedMemory}</span>`;
+
+                        html += `
+                            <div class="cart-item" data-id="${product.id}" data-cart-id="${item.id || ''}">
+                                <img src="${product.image}" alt="${product.title}" class="cart-item-image">
+                                <div class="cart-item-details">
+                                    <span class="cart-item-brand">${product.brand}</span>
+                                    <h4 class="cart-item-title">${product.title}</h4>
+                                    ${variantHtml ? `<div class="cart-item-variants" style="margin-top:4px;">${variantHtml}</div>` : ''}
+                                    <div class="cart-item-price">${displayPrice}</div>
+                                </div>
+                                <div class="cart-item-quantity">
+                                    <button class="qty-btn minus" onclick="updateQty(${product.id}, -1)">-</button>
+                                    <span class="qty-value">${product.quantity}</span>
+                                    <button class="qty-btn plus" onclick="updateQty(${product.id}, 1)">+</button>
+                                </div>
+                                <button class="remove-item" onclick="removeFromCart(${product.id})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                });
+
+                cartItemsContainer.innerHTML = html;
+
+                // Calculate totals
+                const donation = subtotal * 0.15;
+                const grandTotal = subtotal;
+
+                subtotalEl.textContent = subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+                donationEl.textContent = donation.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+                grandTotalEl.textContent = grandTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+            }
+
+            window.updateQty = async function (productId, delta) {
+                if (window.CartAPI) {
+                    const items = await window.CartAPI.getItems();
+                    const item = items.find(i => (i.product_id || i.productId) === productId);
+                    if (item) {
+                        const newQty = item.quantity + delta;
+                        if (newQty > 0) {
+                            await window.CartAPI.updateQuantity(productId, newQty);
+                        } else {
+                            await window.CartAPI.removeItem(productId);
+                        }
+                        renderCart();
+                    }
+                } else {
+                    const items = Cart.getItems();
+                    const item = items.find(i => i.productId === productId);
+                    if (item) {
+                        const newQty = item.quantity + delta;
+                        if (newQty > 0) {
+                            Cart.updateQuantity(productId, newQty);
+                        } else {
+                            Cart.removeItem(productId);
+                        }
+                        renderCart();
+                    }
+                }
+            };
+
+            window.removeFromCart = async function (productId) {
+                if (window.CartAPI) {
+                    await window.CartAPI.removeItem(productId);
+                } else {
+                    Cart.removeItem(productId);
+                }
+                renderCart();
+            };
+
+            renderCart();
+        });
+    </script>
+</body>
+
+</html>

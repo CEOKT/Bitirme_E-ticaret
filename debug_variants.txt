@@ -1,0 +1,120 @@
+Time: 2025-12-11T15:06:11.516Z
+Name: Debug Variant Product
+Colors: ["D_Red","D_Blue"]
+Sizes: ["D_Small","D_Medium"]
+Memories: ["D_64GB"]
+
+PUT Time: 2025-12-11T15:08:06.424Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:08:16.262Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:09:01.494Z
+ID: 27
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: ["Standart"]
+Memories: ["128GB"]
+
+PUT Time: 2025-12-11T15:12:16.679Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:15:16.596Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:15:30.265Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:18:09.254Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:18:25.978Z
+ID: 24
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:23:26.323Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:23:35.895Z
+ID: 24
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["128GB"]
+
+PUT Time: 2025-12-11T15:55:40.053Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T15:56:01.508Z
+ID: 25
+Colors: ["Siyah","Gümüş","Altın"]
+Sizes: []
+Memories: ["64GB","125GB"]
+
+PUT Time: 2025-12-11T16:01:33.878Z
+ID: 25
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:01:36.035Z
+ID: 26
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:01:37.721Z
+ID: 27
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:01:39.032Z
+ID: 24
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:02:32.521Z
+ID: 27
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:06:18.696Z
+ID: 27
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+
+PUT Time: 2025-12-11T16:06:22.108Z
+ID: 27
+Colors: undefined
+Sizes: undefined
+Memories: undefined
+

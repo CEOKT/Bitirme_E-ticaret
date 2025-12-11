@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcılar - Destifo Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-shield-halved"></i> <span>Destifo Admin</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="nav-item active">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="products.html" class="nav-item">
+                    <i class="fa-solid fa-box"></i>
+                    <span>Ürünler</span>
+                </a>
+                <a href="donations.html" class="nav-item">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Bağışlar</span>
+                </a>
+                <a href="orders.html" class="nav-item">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span>Siparişler</span>
+                </a>
+                <a href="../index.html" class="nav-item"
+                    style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>Siteye Git</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Kullanıcı Yönetimi</h1>
+                <div class="admin-profile">
+                    <span id="adminName">Admin</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="admin-table-container">
+                    <div class="table-header">
+                        <h2>Tüm Kullanıcılar</h2>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ad Soyad</th>
+                                <th>E-posta</th>
+                                <th>Telefon</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'index.html';
+        }
+
+        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'index.html';
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('tr-TR');
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`);
+                const users = await response.json();
+
+                const tbody = document.getElementById('usersTable');
+
+                if (users.length > 0) {
+                    tbody.innerHTML = users.map(user => `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone || '-'}</td>
+                            <td>${formatDate(user.created_at)}</td>
+                            <td>
+                                <span class="status-badge ${user.is_blocked ? 'blocked' : 'active'}">
+                                    ${user.is_blocked ? 'Engelli' : 'Aktif'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="action-btn block" onclick="toggleBlock(${user.id}, ${!user.is_blocked})">
+                                    ${user.is_blocked ? 'Engeli Kaldır' : 'Engelle'}
+                                </button>
+                                <button class="action-btn delete" onclick="deleteUser(${user.id})">
+                                    Sil
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-users"></i><br>Henüz kullanıcı yok</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function toggleBlock(userId, blocked) {
+            if (!confirm(blocked ? 'Bu kullanıcıyı engellemek istediğinize emin misiniz?' : 'Engeli kaldırmak istediğinize emin misiniz?')) return;
+
+            try {
+                await fetch(`${API_BASE}/admin/users/${userId}/block`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ blocked })
+                });
+                loadUsers();
+            } catch (error) {
+                alert('İşlem başarısız');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
+
+            try {
+                await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'DELETE' });
+                loadUsers();
+            } catch (error) {
+                alert('Silme işlemi başarısız');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+
+</html>

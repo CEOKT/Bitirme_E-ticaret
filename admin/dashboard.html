@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Destifo Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-shield-halved"></i> <span>Destifo Admin</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="nav-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="products.html" class="nav-item">
+                    <i class="fa-solid fa-box"></i>
+                    <span>Ürünler</span>
+                </a>
+                <a href="donations.html" class="nav-item">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Bağışlar</span>
+                </a>
+                <a href="orders.html" class="nav-item">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span>Siparişler</span>
+                </a>
+                <a href="../index.html" class="nav-item"
+                    style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>Siteye Git</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Dashboard</h1>
+                <div class="admin-profile">
+                    <span id="adminName">Admin</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Toplam Kullanıcı</h3>
+                            <i class="fa-solid fa-users users"></i>
+                        </div>
+                        <div class="stat-card-value" id="userCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Toplam Ürün</h3>
+                            <i class="fa-solid fa-box products"></i>
+                        </div>
+                        <div class="stat-card-value" id="productCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Toplam Sipariş</h3>
+                            <i class="fa-solid fa-shopping-cart orders"></i>
+                        </div>
+                        <div class="stat-card-value" id="orderCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Toplam Bağış</h3>
+                            <i class="fa-solid fa-hand-holding-heart donations"></i>
+                        </div>
+                        <div class="stat-card-value" id="donationTotal">0 TL</div>
+                    </div>
+                </div>
+
+                <!-- Recent Tables -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Recent Orders -->
+                    <div class="admin-table-container">
+                        <div class="table-header">
+                            <h2>Son Siparişler</h2>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentOrders">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Low Stock Products -->
+                    <div class="admin-table-container">
+                        <div class="table-header">
+                            <h2>Düşük Stoklu Ürünler</h2>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Stok</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lowStock">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Check authentication
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'index.html';
+        }
+
+        // Load admin info
+        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'index.html';
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('tr-TR');
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/dashboard`);
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('userCount').textContent = data.stats.users;
+                document.getElementById('productCount').textContent = data.stats.products;
+                document.getElementById('orderCount').textContent = data.stats.orders;
+                document.getElementById('donationTotal').textContent = data.stats.donations;
+
+                // Recent orders
+                const ordersBody = document.getElementById('recentOrders');
+                if (data.recentOrders.length > 0) {
+                    ordersBody.innerHTML = data.recentOrders.map(order => `
+                        <tr>
+                            <td>#${order.id}</td>
+                            <td>${order.total_amount}</td>
+                            <td><span class="status-badge ${order.status}">${order.status}</span></td>
+                            <td>${formatDate(order.created_at)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    ordersBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">Sipariş bulunamadı</td></tr>';
+                }
+
+                // Low stock
+                const lowStockBody = document.getElementById('lowStock');
+                if (data.lowStock.length > 0) {
+                    lowStockBody.innerHTML = data.lowStock.map(product => `
+                        <tr>
+                            <td>${product.name}</td>
+                            <td><strong style="color: ${product.stock < 5 ? 'red' : 'orange'}">${product.stock}</strong></td>
+                            <td><a href="products.html" class="action-btn edit">Stok Güncelle</a></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    lowStockBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:30px;">Düşük stoklu ürün yok</td></tr>';
+                }
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+
+</html>

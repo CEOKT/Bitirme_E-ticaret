@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorilerim - Destifo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/products.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                    <i class="fa-solid fa-heart logo-icon"></i>
+                    <span class="logo-text">Destifo</span>
+                </a>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <a href="account.html" class="action-item">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Hesabım</span>
+                </a>
+                <a href="favorites.html" class="action-item">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Favorilerim</span>
+                </a>
+                <a href="cart.html" class="action-item">
+                    <div class="cart-icon-wrapper">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    <span>Sepetim</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Section -->
+    <nav class="main-nav">
+        <div class="container nav-inner">
+            <a href="#" class="nav-item special-item"><i class="fa-solid fa-hand-holding-heart"></i> İyilik
+                Fırsatları</a>
+            <a href="#" class="nav-item">Kadın</a>
+            <a href="#" class="nav-item">Erkek</a>
+            <a href="#" class="nav-item">Çocuk & Bebek</a>
+            <a href="#" class="nav-item">Ayakkabı & Çanta</a>
+            <a href="#" class="nav-item">Saat & Aksesuar</a>
+            <a href="#" class="nav-item">Kozmetik</a>
+            <a href="#" class="nav-item">Ev & Yaşam</a>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs container">
+        <a href="index.html">Anasayfa</a> <i class="fa-solid fa-chevron-right"></i>
+        <span class="current">Favorilerim</span>
+    </div>
+
+    <!-- Favorites Section -->
+    <section class="favorites-section container">
+        <h2 class="section-title">Favorilerim</h2>
+
+        <div id="favorites-grid" class="product-grid">
+            <!-- Favorites will be loaded here by JavaScript -->
+        </div>
+
+        <div id="empty-favorites" class="empty-state" style="display: none;">
+            <i class="fa-solid fa-heart"></i>
+            <h3>Favori Listeniz Boş</h3>
+            <p>Beğendiğiniz ürünleri favorilerinize ekleyerek daha sonra kolayca ulaşabilirsiniz.</p>
+            <a href="index.html" class="btn-primary">Ürünleri Keşfet</a>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Destifo</span>
+                </div>
+                <p class="footer-desc">Türkiye'nin en büyük sosyal sorumluluk pazar yeri. Alışveriş alışkanlıklarını
+                    iyiliğe dönüştürüyoruz.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Destifo</h4>
+                <ul>
+                    <li><a href="#">Hakkımızda</a></li>
+                    <li><a href="#">Kariyer</a></li>
+                    <li><a href="#">Sürdürülebilirlik</a></li>
+                    <li><a href="#">İletişim</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Müşteri Hizmetleri</h4>
+                <ul>
+                    <li><a href="#">Sıkça Sorulan Sorular</a></li>
+                    <li><a href="#">Canlı Destek</a></li>
+                    <li><a href="#">İade ve İptal</a></li>
+                    <li><a href="#">İşlem Rehberi</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col campaigns-col">
+                <h4>Kampanyalar</h4>
+                <div class="footer-campaign-card">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <div>
+                        <span>Eğitim Seferberliği</span>
+                        <a href="#">Detaylı Bilgi ></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom container">
+            <div class="copyright">© 2024 Destifo Teknoloji A.Ş. Tüm hakları saklıdır.</div>
+            <div class="footer-links">
+                <a href="#">Gizlilik Politikası</a>
+                <a href="#">Kullanım Koşulları</a>
+                <a href="#">Çerez Politikası</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/products_data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/favorites.js"></script>
+    <script>
+        // Render favorites page
+        document.addEventListener('DOMContentLoaded', () => {
+            const favoritesGrid = document.getElementById('favorites-grid');
+            const emptyFavorites = document.getElementById('empty-favorites');
+
+            async function renderFavorites() {
+                let items = [];
+                let isApi = false;
+
+                if (window.FavoritesAPI) {
+                    try {
+                        // Change from getIds() to getItems() to get full details
+                        items = await window.FavoritesAPI.getItems();
+                        isApi = true;
+                    } catch (e) {
+                        // Fallback to local IDs
+                        items = Favorites.getItems();
+                        isApi = false;
+                    }
+                } else {
+                    items = Favorites.getItems();
+                }
+
+                if (items.length === 0) {
+                    favoritesGrid.style.display = 'none';
+                    emptyFavorites.style.display = 'flex';
+                    return;
+                }
+
+                favoritesGrid.style.display = 'grid';
+                emptyFavorites.style.display = 'none';
+
+                let html = '';
+
+                items.forEach(item => {
+                    let product;
+
+                    if (isApi) {
+                        // Item is the product object from API (id, product_id, title, brand, etc.)
+                        product = {
+                            id: item.product_id, // Important: DB returns product_id column
+                            title: item.title,
+                            brand: item.brand,
+                            price: item.price,
+                            image: item.image,
+                            rating: item.rating
+                        };
+                    } else {
+                        // Item is just an ID from local storage
+                        const p = products.find(p => p.id === item);
+                        if (p) product = p;
+                    }
+
+                    if (product) {
+                        let displayPrice = product.price;
+                        if (typeof product.price === 'number') {
+                            displayPrice = product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+                        }
+
+                        html += `
+                            <div class="product-card">
+                                <a href="product.html?id=${product.id}" style="display:block; color:inherit; text-decoration:none;">
+                                    <div class="product-image">
+                                        <img src="${product.image}" alt="${product.title}">
+                                        <button class="add-to-cart-btn" onclick="event.preventDefault(); addToCartFromFav(${product.id})">Sepete Ekle</button>
+                                    </div>
+                                    <div class="product-details">
+                                        <span class="product-brand">${product.brand}</span>
+                                        <h3 class="product-title">${product.title}</h3>
+                                        <div class="product-rating">
+                                            <i class="fa-solid fa-star"></i>
+                                            <span class="rating-count">(${product.rating})</span>
+                                        </div>
+                                        <div class="product-price">${displayPrice}</div>
+                                    </div>
+                                </a>
+                                <button class="remove-favorite-btn" onclick="removeFromFavorites(${product.id})">
+                                    <i class="fa-solid fa-heart-crack"></i> Favorilerden Çıkar
+                                </button>
+                            </div>
+                        `;
+                    }
+                });
+
+                favoritesGrid.innerHTML = html;
+            }
+
+            window.removeFromFavorites = async function (productId) {
+                if (window.FavoritesAPI) {
+                    await window.FavoritesAPI.remove(productId);
+                } else {
+                    Favorites.remove(productId);
+                }
+                renderFavorites();
+            };
+
+            window.addToCartFromFav = function (productId) {
+                Cart.addItem(productId, 1);
+                alert('Ürün sepete eklendi!');
+            };
+
+            renderFavorites();
+        });
+    </script>
+</body>
+
+</html>
