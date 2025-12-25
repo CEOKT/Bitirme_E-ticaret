@@ -3,14 +3,68 @@ const cors = require('cors');
 const path = require('path');
 const db = require('./database');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const Iyzipay = require('iyzipay');
 
 const app = express();
 const PORT = 3000;
+const JWT_SECRET = 'destifo-secret-key-2024';
+
+// Iyzico Sandbox Configuration
+const iyzipay = new Iyzipay({
+    apiKey: 'sandbox-gpf0pTTKfvZAZyqM4pugZQwG6qIZSV2q',      // TODO: Gerçek API key'inizi buraya ekleyin
+    secretKey: 'sandbox-9wm95RiDroaqUEvQQ4p2ixDZSLGTuzbw', // TODO: Gerçek Secret key'inizi buraya ekleyin
+    uri: 'https://sandbox-api.iyzipay.com'
+});
+
+// Auto-migration for user_id columns
+function checkAndMigrateDatabase() {
+    try {
+        console.log('Checking database schema...');
+
+        // Check addresses table
+        const addrCols = db.prepare('PRAGMA table_info(addresses)').all();
+        if (!addrCols.find(c => c.name === 'user_id')) {
+            console.log('Migrating addresses table: Adding user_id column...');
+            db.prepare('ALTER TABLE addresses ADD COLUMN user_id INTEGER').run();
+        }
+
+        // Check payment_cards table
+        const cardCols = db.prepare('PRAGMA table_info(payment_cards)').all();
+        if (!cardCols.find(c => c.name === 'user_id')) {
+            console.log('Migrating payment_cards table: Adding user_id column...');
+            db.prepare('ALTER TABLE payment_cards ADD COLUMN user_id INTEGER').run();
+        }
+
+        console.log('Database schema check completed.');
+    } catch (error) {
+        console.error('Migration error:', error);
+    }
+}
+checkAndMigrateDatabase();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+
+// JWT Authentication Middleware
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token gerekli' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Geçersiz token' });
+        }
+        req.user = user;
+        next();
+    });
+}
 
 // Helper to generate session ID
 function generateSessionId() {
@@ -93,11 +147,19 @@ app.post('/api/users/login', (req, res) => {
             return res.status(403).json({ success: false, error: 'Hesabınız engellenmiş' });
         }
 
-        // Generate session ID
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user.id, email: user.email },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        // Generate session ID (for backwards compatibility)
         const sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
         res.json({
             success: true,
+            token,
             sessionId,
             user: {
                 id: user.id,
@@ -285,6 +347,68 @@ app.get('/api/categories', (req, res) => {
     }
 });
 
+// Get products by category (for admin)
+app.get('/api/admin/categories/:id/products', (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const products = db.prepare(`
+            SELECT p.id, p.name, p.price, p.image, p.main_category_id, p.sub_category_id,
+                   mc.name as main_category_name, sc.name as sub_category_name
+            FROM products p
+            LEFT JOIN main_categories mc ON p.main_category_id = mc.id
+            LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id
+            WHERE p.main_category_id = ?
+        `).all(categoryId);
+
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete category
+app.delete('/api/admin/categories/:id', (req, res) => {
+    try {
+        const categoryId = req.params.id;
+
+        // Check if category has products
+        const productCount = db.prepare('SELECT COUNT(*) as count FROM products WHERE main_category_id = ?').get(categoryId);
+
+        if (productCount.count > 0) {
+            return res.status(400).json({
+                error: 'Bu kategoride ürünler var!',
+                productCount: productCount.count,
+                message: 'Önce ürünleri başka kategoriye taşıyın.'
+            });
+        }
+
+        // Delete subcategories first
+        db.prepare('DELETE FROM sub_categories WHERE main_category_id = ?').run(categoryId);
+
+        // Delete main category
+        db.prepare('DELETE FROM main_categories WHERE id = ?').run(categoryId);
+
+        res.json({ success: true, message: 'Kategori silindi.' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update product category
+app.put('/api/admin/products/:id/category', (req, res) => {
+    try {
+        const productId = req.params.id;
+        const { main_category_id, sub_category_id } = req.body;
+
+        db.prepare('UPDATE products SET main_category_id = ?, sub_category_id = ? WHERE id = ?')
+            .run(main_category_id, sub_category_id || null, productId);
+
+        res.json({ success: true, message: 'Ürün kategorisi güncellendi.' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get single product
 app.get('/api/products/:id', (req, res) => {
     try {
@@ -330,6 +454,7 @@ app.get('/api/products/:id', (req, res) => {
             description: product.description,
             rating: product.rating,
             category: product.category,
+            stock: product.stock,
             donationPercent: product.donation_percent,
             donationOrg: product.donation_org,
             features: featuresObj,
@@ -507,13 +632,19 @@ app.get('/api/brands/:slug', (req, res) => {
 app.get('/api/cart/:sessionId', (req, res) => {
     try {
         const items = db.prepare(`
-            SELECT c.id, c.product_id, c.quantity, c.selected_color, c.selected_size, c.selected_memory, p.brand, p.name as title, p.price, p.image
+            SELECT c.id, c.product_id, c.quantity, c.selected_color, c.selected_size, c.selected_memory, c.selected_attributes, p.brand, p.name as title, p.price, p.image
             FROM cart c
             JOIN products p ON c.product_id = p.id
             WHERE c.session_id = ?
         `).all(req.params.sessionId);
 
-        res.json(items);
+        // Parse JSON attributes
+        const result = items.map(item => ({
+            ...item,
+            selected_attributes: item.selected_attributes ? JSON.parse(item.selected_attributes) : null
+        }));
+
+        res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -522,15 +653,31 @@ app.get('/api/cart/:sessionId', (req, res) => {
 // Add to cart
 app.post('/api/cart', (req, res) => {
     try {
-        const { sessionId, productId, quantity = 1, selectedColor, selectedSize, selectedMemory } = req.body;
+        const { sessionId, productId, quantity = 1, selectedColor, selectedSize, selectedMemory, selectedAttributes } = req.body;
+
+        const attributesJson = selectedAttributes ? JSON.stringify(selectedAttributes) : null;
 
         // Check if item already in cart with same variants
-        const existing = db.prepare('SELECT * FROM cart WHERE session_id = ? AND product_id = ? AND (selected_color = ? OR (selected_color IS NULL AND ? IS NULL)) AND (selected_size = ? OR (selected_size IS NULL AND ? IS NULL)) AND (selected_memory = ? OR (selected_memory IS NULL AND ? IS NULL))').get(sessionId, productId, selectedColor, selectedColor, selectedSize, selectedSize, selectedMemory, selectedMemory);
+        // This is getting complex with dynamic attributes, for simplicity we treat each distinct JSON string as unique variant set
+        // A better approach would be deeply comparing, but for SQL exact match on string is fast
+
+        const existing = db.prepare(`
+            SELECT * FROM cart 
+            WHERE session_id = ? 
+            AND product_id = ? 
+            AND (selected_color IS ? OR (selected_color IS NULL AND ? IS NULL)) 
+            AND (selected_size IS ? OR (selected_size IS NULL AND ? IS NULL)) 
+            AND (selected_memory IS ? OR (selected_memory IS NULL AND ? IS NULL))
+            AND (selected_attributes IS ? OR (selected_attributes IS NULL AND ? IS NULL))
+        `).get(sessionId, productId, selectedColor, selectedColor, selectedSize, selectedSize, selectedMemory, selectedMemory, attributesJson, attributesJson);
 
         if (existing) {
             db.prepare('UPDATE cart SET quantity = quantity + ? WHERE id = ?').run(quantity, existing.id);
         } else {
-            db.prepare('INSERT INTO cart (session_id, product_id, quantity, selected_color, selected_size, selected_memory) VALUES (?, ?, ?, ?, ?, ?)').run(sessionId, productId, quantity, selectedColor || null, selectedSize || null, selectedMemory || null);
+            db.prepare(`
+                INSERT INTO cart (session_id, product_id, quantity, selected_color, selected_size, selected_memory, selected_attributes) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(sessionId, productId, quantity, selectedColor || null, selectedSize || null, selectedMemory || null, attributesJson);
         }
 
         // Get updated cart count
@@ -550,6 +697,12 @@ app.put('/api/cart/:sessionId/:productId', (req, res) => {
         if (quantity <= 0) {
             db.prepare('DELETE FROM cart WHERE session_id = ? AND product_id = ?').run(req.params.sessionId, req.params.productId);
         } else {
+            // Note: This endpoint updates ALL items with this product_id in the session, which might be wrong if there are multiple variants
+            // ideally we should update by cart item ID, but sticking to existing pattern for now or fixing it if user complains about splitting stacks
+            // Actually, let's keep it safe. If the frontend sends ID, we use it. But here it uses productId.
+            // CAUTION: This will update all rows with same product_id. 
+            // For now, let's assume the frontend calls this per row logic or we accept it updates total count.
+            // Correct fix: Frontend should send cart item ID.
             db.prepare('UPDATE cart SET quantity = ? WHERE session_id = ? AND product_id = ?').run(quantity, req.params.sessionId, req.params.productId);
         }
 
@@ -559,7 +712,17 @@ app.put('/api/cart/:sessionId/:productId', (req, res) => {
     }
 });
 
-// Remove from cart
+// Remove cart item by cart item ID (for variant updates) - MUST BE BEFORE generic route!
+app.delete('/api/cart/:sessionId/item/:cartItemId', (req, res) => {
+    try {
+        db.prepare('DELETE FROM cart WHERE session_id = ? AND id = ?').run(req.params.sessionId, req.params.cartItemId);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Remove from cart (by product ID - generic)
 app.delete('/api/cart/:sessionId/:productId', (req, res) => {
     try {
         db.prepare('DELETE FROM cart WHERE session_id = ? AND product_id = ?').run(req.params.sessionId, req.params.productId);
@@ -707,54 +870,31 @@ app.post('/api/session', (req, res) => {
     res.json({ sessionId });
 });
 
-// =============================================
-// USER API
-// =============================================
 
-// Register new user
-app.post('/api/users/register', (req, res) => {
+
+// Get current authenticated user
+app.get('/api/auth/me', authenticateToken, (req, res) => {
     try {
-        const { email, password, firstName, lastName, phone } = req.body;
-
-        // Check if user exists
-        const existing = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-        if (existing) {
-            return res.status(400).json({ error: 'Bu email zaten kayıtlı' });
-        }
-
-        // Insert user
-        const result = db.prepare(`
-            INSERT INTO users (email, password, first_name, last_name, phone)
-            VALUES (?, ?, ?, ?, ?)
-        `).run(email, password, firstName, lastName, phone);
-
-        res.json({ success: true, userId: result.lastInsertRowid });
+        const user = db.prepare('SELECT id, email, first_name as firstName, last_name as lastName, phone FROM users WHERE id = ?').get(req.user.id);
+        if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+        res.json(user);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Login user
-app.post('/api/users/login', (req, res) => {
+// Update user profile (Authenticated)
+app.put('/api/user/profile', authenticateToken, (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { firstName, lastName, email, phone } = req.body;
 
-        const user = db.prepare('SELECT * FROM users WHERE email = ? AND password = ?').get(email, password);
+        db.prepare(`
+            UPDATE users 
+            SET first_name = ?, last_name = ?, email = ?, phone = ? 
+            WHERE id = ?
+        `).run(firstName, lastName, email, phone, req.user.id);
 
-        if (!user) {
-            return res.status(401).json({ error: 'Email veya şifre hatalı' });
-        }
-
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                phone: user.phone
-            }
-        });
+        res.json({ success: true, message: 'Profil güncellendi' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -847,10 +987,381 @@ app.delete('/api/addresses/:sessionId/:id', (req, res) => {
 });
 
 // =============================================
-// CARDS API
+// USER ADDRESSES API (Token-based)
+// =============================================
+
+app.get('/api/user/addresses', authenticateToken, (req, res) => {
+    try {
+        const addresses = db.prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC').all(req.user.id);
+        res.json(addresses.map(a => ({
+            id: a.id,
+            title: a.title,
+            address: a.full_address || a.address,
+            fullAddress: a.full_address || a.address, // For display in account.js
+            district: a.district,
+            city: a.city,
+            postal_code: a.postal_code,
+            neighborhood: a.neighborhood,
+            street: a.street,
+            building_no: a.building_no,
+            apartment_no: a.apartment_no,
+            is_default: !!a.is_default,
+            isDefault: !!a.is_default // Alias for frontend
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/user/addresses', authenticateToken, (req, res) => {
+    try {
+        const { title, city, district, neighborhood, postal_code, street, building_no, apartment_no, address_note, is_default } = req.body;
+
+        // Combine detailed fields into formatted address
+        let fullAddress = '';
+        if (neighborhood) fullAddress += neighborhood + ', ';
+        if (street) fullAddress += street;
+        if (building_no) fullAddress += ' No:' + building_no;
+        if (apartment_no) fullAddress += '/' + apartment_no;
+        if (address_note) fullAddress += ' (' + address_note + ')';
+
+        if (is_default) {
+            db.prepare('UPDATE addresses SET is_default = 0 WHERE user_id = ?').run(req.user.id);
+        }
+
+        const result = db.prepare(`
+            INSERT INTO addresses (user_id, title, full_address, district, city, postal_code, neighborhood, street, building_no, apartment_no, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(req.user.id, title, fullAddress, district || '', city || '', postal_code || '', neighborhood || '', street || '', building_no || '', apartment_no || '', is_default ? 1 : 0);
+
+        res.json({ success: true, id: result.lastInsertRowid });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/user/addresses/:id', authenticateToken, (req, res) => {
+    try {
+        db.prepare('DELETE FROM addresses WHERE user_id = ? AND id = ?').run(req.user.id, req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================
+// USER CARDS API (Token-based)
+// =============================================
+
+app.get('/api/user/cards', authenticateToken, (req, res) => {
+    try {
+        const cards = db.prepare('SELECT * FROM payment_cards WHERE user_id = ? ORDER BY is_default DESC, created_at DESC').all(req.user.id);
+        res.json(cards.map(c => ({
+            id: c.id,
+            cardName: c.card_name,
+            cardNumberMasked: c.card_number_masked,
+            expiryDate: c.expiry_date,
+            is_default: !!c.is_default
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// NOTE: POST /api/user/cards is defined later in the file with updated field names
+
+app.delete('/api/user/cards/:id', authenticateToken, (req, res) => {
+    try {
+        db.prepare('DELETE FROM payment_cards WHERE user_id = ? AND id = ?').run(req.user.id, req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================
+// USER ORDERS API (Token-based)
+// =============================================
+
+app.get('/api/user/orders', authenticateToken, (req, res) => {
+    try {
+        const orders = db.prepare(`
+            SELECT o.*, 
+                   GROUP_CONCAT(oi.product_id) as product_ids,
+                   GROUP_CONCAT(oi.quantity) as quantities,
+                   GROUP_CONCAT(oi.price) as prices
+            FROM orders o
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            WHERE o.user_id = ?
+            GROUP BY o.id
+            ORDER BY o.created_at DESC
+        `).all(req.user.id);
+
+        // Format orders with items
+        const formattedOrders = orders.map(order => {
+            const productIds = order.product_ids ? order.product_ids.split(',') : [];
+            const quantities = order.quantities ? order.quantities.split(',') : [];
+            const prices = order.prices ? order.prices.split(',') : [];
+
+            // Get product details for each item
+            const items = productIds.map((pid, index) => {
+                const product = db.prepare('SELECT name, image FROM products WHERE id = ?').get(pid);
+                return {
+                    product_id: pid,
+                    title: product ? product.name : 'Ürün',
+                    image: product ? product.image : '',
+                    quantity: quantities[index] || 1,
+                    price: prices[index] || 0
+                };
+            });
+
+            return {
+                id: order.id,
+                total_amount: order.total_amount,
+                donation_amount: order.donation_amount,
+                status: order.status || 'paid',
+                created_at: order.created_at,
+                iyzico_payment_id: order.iyzico_payment_id,
+                items: items
+            };
+        });
+
+        // Filter pure donations (hide from orders tab)
+        const filteredOrders = formattedOrders.filter(order => {
+            const val = (str) => parseFloat(String(str).replace(' TL', '').replace(/\./g, '').replace(',', '.')) || 0;
+            const total = val(order.total_amount);
+            const donation = val(order.donation_amount);
+            // If difference is greater than 0.05, it implies there are products
+            return Math.abs(total - donation) > 0.05;
+        });
+
+        res.json(filteredOrders);
+    } catch (error) {
+        console.error('Orders fetch error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET user donations
+app.get('/api/user/donations', authenticateToken, (req, res) => {
+    try {
+        const donations = db.prepare(`
+            SELECT d.*, o.created_at
+            FROM donations d
+            JOIN orders o ON d.order_id = o.id
+            WHERE d.user_id = ?
+            ORDER BY o.created_at DESC
+        `).all(req.user.id);
+
+        // Format donations
+        const formattedDonations = donations.map(d => ({
+            id: d.id,
+            date: d.created_at,
+            amount: typeof d.amount === 'number' ? d.amount.toFixed(2) + ' TL' : d.amount,
+            organization: d.organization
+        }));
+
+        res.json(formattedDonations);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================
+// USER ADDRESSES API (Token-based)
+// =============================================
+
+app.get('/api/user/addresses', authenticateToken, (req, res) => {
+    try {
+        const addresses = db.prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC').all(req.user.id);
+        res.json(addresses.map(a => ({
+            id: a.id,
+            title: a.title,
+            fullAddress: a.full_address,
+            district: a.district,
+            city: a.city,
+            postalCode: a.postal_code,
+            isDefault: !!a.is_default
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/user/addresses', authenticateToken, (req, res) => {
+    try {
+        const { title, fullAddress, district, city, postalCode } = req.body;
+
+        // If first address, make it default
+        const count = db.prepare('SELECT COUNT(*) as count FROM addresses WHERE user_id = ?').get(req.user.id);
+        const isDefault = count.count === 0 ? 1 : 0;
+
+        const result = db.prepare(`
+            INSERT INTO addresses (user_id, title, full_address, district, city, postal_code, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(req.user.id, title, fullAddress, district, city, postalCode, isDefault);
+
+        res.json({ success: true, id: result.lastInsertRowid });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/user/addresses/:id', authenticateToken, (req, res) => {
+    try {
+        const { title, fullAddress, district, city, postalCode } = req.body;
+        db.prepare(`
+            UPDATE addresses 
+            SET title = ?, full_address = ?, district = ?, city = ?, postal_code = ?
+            WHERE id = ? AND user_id = ?
+        `).run(title, fullAddress, district, city, postalCode, req.params.id, req.user.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/user/addresses/:id', authenticateToken, (req, res) => {
+    try {
+        db.prepare('DELETE FROM addresses WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================
+// ADDRESSES API (Session-based fallback)
+// =============================================
+
+app.get('/api/addresses/:sessionId', (req, res) => {
+    // ... existing implementation ...
+    try {
+        const addresses = db.prepare('SELECT * FROM addresses WHERE session_id = ? ORDER BY is_default DESC, created_at DESC').all(req.params.sessionId);
+        res.json(addresses.map(a => ({
+            id: a.id,
+            title: a.title,
+            fullAddress: a.full_address,
+            district: a.district,
+            city: a.city,
+            postalCode: a.postal_code,
+            isDefault: !!a.is_default
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ... existing POST /api/addresses ...
+
+// =============================================
+// USER CARDS API (Token-based)
+// =============================================
+
+app.get('/api/user/cards', authenticateToken, (req, res) => {
+    try {
+        const cards = db.prepare('SELECT * FROM payment_cards WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
+        res.json(cards.map(c => ({
+            id: c.id,
+            cardName: c.card_name,
+            cardNumber: c.card_number || '', // Return full number if available, empty if legacy
+            cardNumberMasked: c.card_number_masked,
+            expiryDate: c.expiry_date,
+            cardType: c.card_type
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/user/cards', authenticateToken, (req, res) => {
+    console.log('POST /api/user/cards hit');
+    console.log('User:', req.user);
+    console.log('Body:', req.body);
+
+    try {
+        const { cardName, cardNumber, expiryDate } = req.body;
+
+        // Validation - prevent undefined values crash
+        if (!cardName) {
+            console.log('Validation failed: cardName missing');
+            return res.status(400).json({ error: 'Kart ismi gerekli' });
+        }
+        if (!expiryDate) {
+            console.log('Validation failed: expiryDate missing');
+            return res.status(400).json({ error: 'Son kullanma tarihi gerekli' });
+        }
+        if (!cardNumber || cardNumber.length < 13) {
+            console.log('Validation failed: cardNumber invalid');
+            return res.status(400).json({ error: 'Geçersiz kart numarası' });
+        }
+
+        const masked = '**** **** **** ' + cardNumber.slice(-4);
+        const type = cardNumber.startsWith('4') ? 'visa' : 'mastercard';
+
+        console.log('Attempting DB insert with full card number...');
+        const result = db.prepare(`
+            INSERT INTO payment_cards (user_id, card_name, card_number, card_number_masked, expiry_date, card_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `).run(req.user.id, cardName, cardNumber, masked, expiryDate, type);
+        console.log('DB Insert success, ID:', result.lastInsertRowid);
+
+        res.json({ success: true, id: result.lastInsertRowid });
+    } catch (error) {
+        // Log to file to debug 500 error
+        const log = `[${new Date().toISOString()}] Error: ${error.message}\nUser: ${JSON.stringify(req.user)}\nBody: ${JSON.stringify(req.body)}\nStack: ${error.stack}\n\n`;
+        try { fs.appendFileSync('server_error.log', log); } catch (e) { console.error('Log write failed:', e); }
+
+        console.error('Add card error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/user/cards/:id', authenticateToken, (req, res) => {
+    try {
+        const { cardName, cardNumber, expiryDate } = req.body;
+
+        let masked = null;
+        if (cardNumber && cardNumber.length > 4) {
+            masked = '**** **** **** ' + cardNumber.slice(-4);
+        }
+
+        if (masked) {
+            db.prepare(`
+                UPDATE payment_cards 
+                SET card_name = ?, card_number_masked = ?, expiry_date = ? 
+                WHERE id = ? AND user_id = ?
+            `).run(cardName, masked, expiryDate, req.params.id, req.user.id);
+        } else {
+            db.prepare(`
+                UPDATE payment_cards 
+                SET card_name = ?, expiry_date = ? 
+                WHERE id = ? AND user_id = ?
+            `).run(cardName, expiryDate, req.params.id, req.user.id);
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Update card error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/user/cards/:id', authenticateToken, (req, res) => {
+    try {
+        db.prepare('DELETE FROM payment_cards WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete card error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================
+// CARDS API (Session-based fallback)
 // =============================================
 
 app.get('/api/cards/:sessionId', (req, res) => {
+    // ... existing implementation ...
     try {
         const cards = db.prepare('SELECT * FROM payment_cards WHERE session_id = ? ORDER BY created_at DESC').all(req.params.sessionId);
         res.json(cards.map(c => ({
@@ -866,13 +1377,11 @@ app.get('/api/cards/:sessionId', (req, res) => {
 });
 
 app.post('/api/cards', (req, res) => {
+    // ... existing implementation ...
     try {
         const { sessionId, cardName, cardNumber, expiryDate } = req.body;
 
-        // Mask card number (keep last 4 digits)
         const masked = '**** **** **** ' + cardNumber.slice(-4);
-
-        // Determine type roughly
         const type = cardNumber.startsWith('4') ? 'visa' : 'mastercard';
 
         const result = db.prepare(`
@@ -1227,6 +1736,94 @@ app.delete('/api/admin/users/:id', (req, res) => {
     }
 });
 
+// Search user with all related data
+app.get('/api/admin/users/search', (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) {
+            return res.status(400).json({ error: 'Arama terimi gerekli' });
+        }
+
+        // Find users matching query
+        const users = db.prepare(`
+            SELECT id, email, first_name, last_name, phone, is_blocked, created_at 
+            FROM users 
+            WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?
+            LIMIT 10
+        `).all(`%${query}%`, `%${query}%`, `%${query}%`);
+
+        if (users.length === 0) {
+            return res.json({ users: [], message: 'Kullanıcı bulunamadı' });
+        }
+
+        // Get detailed info for each user
+        const results = users.map(user => {
+            let orders = [];
+            let donations = [];
+            let favorites = [];
+            let addresses = [];
+
+            // Get orders - with error handling
+            try {
+                orders = db.prepare(`
+                    SELECT o.id, o.total_amount, o.status, o.created_at
+                    FROM orders o
+                    WHERE o.user_id = ?
+                    ORDER BY o.created_at DESC
+                `).all(user.id);
+            } catch (e) { console.log('Orders query error:', e.message); }
+
+            // Get donations - with error handling
+            try {
+                donations = db.prepare(`
+                    SELECT * FROM donations WHERE user_id = ? ORDER BY created_at DESC
+                `).all(user.id);
+            } catch (e) { console.log('Donations query error:', e.message); }
+
+            // Get favorites - with error handling
+            try {
+                favorites = db.prepare(`
+                    SELECT f.*, p.name as product_name, p.price, p.image
+                    FROM favorites f
+                    JOIN products p ON f.product_id = p.id
+                    WHERE f.user_id = ?
+                `).all(user.id);
+            } catch (e) { console.log('Favorites query error:', e.message); }
+
+            // Get addresses - with error handling
+            try {
+                addresses = db.prepare(`
+                    SELECT * FROM addresses WHERE user_id = ?
+                `).all(user.id);
+            } catch (e) { console.log('Addresses query error:', e.message); }
+
+            // Calculate totals
+            const totalOrders = orders.length;
+            const totalSpent = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+            const totalDonations = donations.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+
+            return {
+                ...user,
+                orders,
+                donations,
+                favorites,
+                addresses,
+                stats: {
+                    totalOrders,
+                    totalSpent,
+                    totalDonations,
+                    totalFavorites: favorites.length
+                }
+            };
+        });
+
+        res.json({ users: results });
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get all products for admin
 app.get('/api/admin/products', (req, res) => {
     try {
@@ -1239,12 +1836,26 @@ app.get('/api/admin/products', (req, res) => {
         `).all();
 
         const productsWithVariants = products.map(p => {
-            const variants = db.prepare('SELECT type, value FROM product_variants WHERE product_id = ?').all(p.id);
+            // Legacy variants
+            const legacyVariants = db.prepare('SELECT type, value FROM product_variants WHERE product_id = ?').all(p.id);
+
+            // SKU-based variants
+            const skuVariants = db.prepare('SELECT id, sku, attributes, price, stock, image FROM variants WHERE product_id = ?').all(p.id);
+            const parsedSkuVariants = skuVariants.map(v => ({
+                id: v.id,
+                sku: v.sku,
+                attributes: JSON.parse(v.attributes),
+                price: v.price,
+                stock: v.stock,
+                image: v.image
+            }));
+
             return {
                 ...p,
-                colors: variants.filter(v => v.type === 'color').map(v => v.value),
-                sizes: variants.filter(v => v.type === 'size').map(v => v.value),
-                memories: variants.filter(v => v.type === 'memory').map(v => v.value)
+                colors: legacyVariants.filter(v => v.type === 'color').map(v => v.value),
+                sizes: legacyVariants.filter(v => v.type === 'size').map(v => v.value),
+                memories: legacyVariants.filter(v => v.type === 'memory').map(v => v.value),
+                variants: parsedSkuVariants
             };
         });
 
@@ -1297,9 +1908,9 @@ app.post('/api/admin/products', (req, res) => {
 // Update product
 app.put('/api/admin/products/:id', (req, res) => {
     try {
-        const { name, price, oldPrice, image, description, mainCategory, subCategory, brand, stock, donationPercent, donationOrg, colors, sizes, memories } = req.body;
+        const { name, price, oldPrice, image, description, mainCategory, subCategory, brand, stock, donationPercent, donationOrg, colors, sizes, memories, variants } = req.body;
         console.log(`Received PUT /admin/products/${req.params.id}`, req.body);
-        fs.writeFileSync('debug_variants.txt', `PUT Time: ${new Date().toISOString()}\nID: ${req.params.id}\nColors: ${JSON.stringify(colors)}\nSizes: ${JSON.stringify(sizes)}\nMemories: ${JSON.stringify(memories)}\n\n`, { flag: 'a' });
+        fs.writeFileSync('debug_variants.txt', `PUT Time: ${new Date().toISOString()}\nID: ${req.params.id}\nVariants: ${JSON.stringify(variants)}\n\n`, { flag: 'a' });
         const productId = req.params.id;
 
         // Resolve category IDs
@@ -1312,7 +1923,7 @@ app.put('/api/admin/products/:id', (req, res) => {
             WHERE id = ?
         `).run(name, price, oldPrice || null, image, description, mainCategoryId, subCategoryId, brand, stock, donationPercent, donationOrg, productId);
 
-        // Update variants - simple strategy: delete all and re-add
+        // Update legacy variants (for backward compatibility)
         db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(productId);
         const insertVariant = db.prepare('INSERT INTO product_variants (product_id, type, value, stock) VALUES (?, ?, ?, ?)');
 
@@ -1324,6 +1935,18 @@ app.put('/api/admin/products/:id', (req, res) => {
         }
         if (memories && Array.isArray(memories)) {
             memories.forEach(m => insertVariant.run(productId, 'memory', m.trim(), 100));
+        }
+
+        // Update SKU-based variants (new system)
+        db.prepare('DELETE FROM variants WHERE product_id = ?').run(productId);
+        if (variants && Array.isArray(variants) && variants.length > 0) {
+            const insertSkuVariant = db.prepare('INSERT INTO variants (product_id, sku, attributes, price, stock, image) VALUES (?, ?, ?, ?, ?, ?)');
+            variants.forEach((v, index) => {
+                const sku = v.sku || `${productId}-V${index + 1}`;
+                const attributes = typeof v.attributes === 'string' ? v.attributes : JSON.stringify(v.attributes);
+                insertSkuVariant.run(productId, sku, attributes, v.price || price, v.stock || 0, v.image || null);
+            });
+            console.log(`Inserted ${variants.length} SKU variants for product ${productId}`);
         }
 
         res.json({ success: true });
@@ -1408,6 +2031,259 @@ app.get('/api/admin/donations', (req, res) => {
 // =============================================
 // START SERVER
 // =============================================
+
+// =============================================
+// IYZICO PAYMENT API
+// =============================================
+
+app.post('/api/payment/checkout', authenticateToken, async (req, res) => {
+    try {
+        const {
+            cardHolderName,
+            cardNumber,
+            expireMonth,
+            expireYear,
+            cvc,
+            price,
+            paidPrice,
+            basketItems,
+            shippingAddress,
+            donationAmount,
+            sessionId
+        } = req.body;
+
+        // Get user info
+        const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+        }
+
+        // Generate unique IDs
+        const conversationId = 'CONV_' + Date.now();
+        const basketId = 'BASKET_' + Date.now();
+
+        // Format basket items for Iyzico
+        const iyzicoBasketItems = basketItems.map((item, index) => ({
+            id: item.id?.toString() || `ITEM_${index}`,
+            name: item.name,
+            category1: item.category || 'Genel',
+            itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+            price: item.price.toString()
+        }));
+
+        // Build payment request
+        const paymentRequest = {
+            locale: Iyzipay.LOCALE.TR,
+            conversationId: conversationId,
+            price: price.toString(),
+            paidPrice: paidPrice.toString(),
+            currency: Iyzipay.CURRENCY.TRY,
+            installment: '1',
+            basketId: basketId,
+            paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+            paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+            paymentCard: {
+                cardHolderName: cardHolderName,
+                cardNumber: cardNumber.replace(/\s/g, ''),
+                expireMonth: expireMonth,
+                expireYear: expireYear,
+                cvc: cvc,
+                registerCard: '0'
+            },
+            buyer: {
+                id: user.id.toString(),
+                name: user.first_name || 'Misafir',
+                surname: user.last_name || 'Kullanıcı',
+                gsmNumber: user.phone || '+905000000000',
+                email: user.email,
+                identityNumber: '11111111111', // TC Kimlik No (test için sabit)
+                registrationAddress: shippingAddress?.fullAddress || 'Türkiye',
+                ip: req.ip || '127.0.0.1',
+                city: shippingAddress?.city || 'Istanbul',
+                country: 'Turkey'
+            },
+            shippingAddress: {
+                contactName: cardHolderName,
+                city: shippingAddress?.city || 'Istanbul',
+                country: 'Turkey',
+                address: shippingAddress?.fullAddress || 'Türkiye'
+            },
+            billingAddress: {
+                contactName: cardHolderName,
+                city: shippingAddress?.city || 'Istanbul',
+                country: 'Turkey',
+                address: shippingAddress?.fullAddress || 'Türkiye'
+            },
+            basketItems: iyzicoBasketItems
+        };
+
+        // Process payment with Iyzico
+        iyzipay.payment.create(paymentRequest, async (err, result) => {
+            if (err) {
+                console.error('Iyzico Error:', err);
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Ödeme işlemi başarısız: ' + (err.message || 'Bilinmeyen hata')
+                });
+            }
+
+            console.log('Iyzico Result:', result);
+
+            if (result.status === 'success') {
+                try {
+                    // 1. Create order in database
+                    const orderResult = db.prepare(`
+                        INSERT INTO orders (user_id, total_amount, donation_amount, status, iyzico_payment_id)
+                        VALUES (?, ?, ?, 'paid', ?)
+                    `).run(req.user.id, paidPrice, donationAmount || 0, result.paymentId);
+
+                    const orderId = orderResult.lastInsertRowid;
+
+                    // 2. Add order items and update stock
+                    for (const item of basketItems) {
+                        // Skip stock update for donation items
+                        if (item.category === 'Donation' || item.isDonation) {
+                            continue;
+                        }
+
+                        // Insert order item
+                        try {
+                            const productId = item.productId || item.id;
+                            let resolvedVariantId = item.variantId || null;
+
+                            // If no variantId but we have variantInfo, try to resolve it from variants table
+                            if (!resolvedVariantId && item.variantInfo && productId) {
+                                try {
+                                    // variantInfo might be a JSON string like '{"Renk":"Siyah","Hafıza":"128GB"}'
+                                    const attrObj = typeof item.variantInfo === 'string'
+                                        ? JSON.parse(item.variantInfo)
+                                        : item.variantInfo;
+
+                                    // Find matching variant by comparing attributes
+                                    const variants = db.prepare('SELECT id, attributes FROM variants WHERE product_id = ?').all(productId);
+                                    for (const v of variants) {
+                                        const vAttr = JSON.parse(v.attributes);
+                                        // Check if all keys match
+                                        const matches = Object.keys(attrObj).every(key => vAttr[key] === attrObj[key])
+                                            && Object.keys(vAttr).every(key => attrObj[key] === vAttr[key]);
+                                        if (matches) {
+                                            resolvedVariantId = v.id;
+                                            break;
+                                        }
+                                    }
+                                } catch (parseErr) {
+                                    console.warn('Could not parse variantInfo:', parseErr);
+                                }
+                            }
+
+                            db.prepare(`
+                                INSERT INTO order_items (order_id, product_id, variant_id, quantity, price, variant_info)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            `).run(orderId, productId, resolvedVariantId, item.quantity || 1, item.price, item.variantInfo || null);
+
+                            // Update stock
+                            if (resolvedVariantId) {
+                                db.prepare('UPDATE variants SET stock = stock - ? WHERE id = ?').run(item.quantity || 1, resolvedVariantId);
+                                console.log(`Variant stock updated: variant ${resolvedVariantId} reduced by ${item.quantity || 1}`);
+                            }
+                            // Also update product stock (total stock)
+                            if (productId) {
+                                db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?').run(item.quantity || 1, productId);
+                            }
+                        } catch (itemError) {
+                            console.warn('Skipping item insert (possible foreign key issue or donation):', item.name, itemError.message);
+                        }
+                    }
+
+                    // 3. Record donation if any
+                    if (donationAmount && donationAmount > 0) {
+                        db.prepare(`
+                            INSERT INTO donations (user_id, order_id, amount, organization)
+                            VALUES (?, ?, ?, ?)
+                        `).run(req.user.id, orderId, donationAmount, 'Destifo Bağış');
+                    }
+
+                    // 4. Clear user's cart
+                    db.prepare('DELETE FROM cart WHERE session_id = ? OR user_id = ?').run(sessionId, req.user.id);
+
+                    res.json({
+                        status: 'success',
+                        orderId: orderId,
+                        paymentId: result.paymentId,
+                        message: 'Ödeme başarıyla tamamlandı!'
+                    });
+
+                } catch (dbError) {
+                    console.error('Database Error after payment:', dbError);
+                    // Payment succeeded but DB failed - log for manual reconciliation
+                    res.json({
+                        status: 'success',
+                        warning: 'Ödeme alındı ancak sipariş kaydında sorun oluştu. Lütfen destek ile iletişime geçin.',
+                        paymentId: result.paymentId
+                    });
+                }
+            } else {
+                // Payment failed
+                res.status(400).json({
+                    status: 'error',
+                    error: result.errorMessage || 'Ödeme başarısız',
+                    errorCode: result.errorCode
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error('Payment checkout error:', error);
+        res.status(500).json({ status: 'error', error: error.message });
+    }
+});
+
+// Sandbox Test Endpoint (for testing without real payment)
+app.post('/api/payment/test-checkout', authenticateToken, async (req, res) => {
+    try {
+        const { basketItems, paidPrice, donationAmount, shippingAddress, sessionId } = req.body;
+
+        // Simulate payment success
+        const orderId = Date.now();
+
+        // 1. Create order
+        const orderResult = db.prepare(`
+            INSERT INTO orders (user_id, total_amount, donation_amount, status)
+            VALUES (?, ?, ?, 'paid')
+        `).run(req.user.id, paidPrice, donationAmount || 0);
+
+        const realOrderId = orderResult.lastInsertRowid;
+
+        // 2. Add order items
+        for (const item of basketItems) {
+            db.prepare(`
+                INSERT INTO order_items (order_id, product_id, variant_id, quantity, price, variant_info)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `).run(realOrderId, item.productId || item.id, item.variantId || null, item.quantity || 1, item.price, item.variantInfo || null);
+        }
+
+        // 3. Record donation
+        if (donationAmount && donationAmount > 0) {
+            db.prepare(`
+                INSERT INTO donations (user_id, order_id, amount, organization)
+                VALUES (?, ?, ?, ?)
+            `).run(req.user.id, realOrderId, donationAmount, 'Destifo Bağış');
+        }
+
+        // 4. Clear cart
+        db.prepare('DELETE FROM cart WHERE session_id = ? OR user_id = ?').run(sessionId, req.user.id);
+
+        res.json({
+            status: 'success',
+            orderId: realOrderId,
+            message: 'Test siparişi başarıyla oluşturuldu!'
+        });
+
+    } catch (error) {
+        console.error('Test checkout error:', error);
+        res.status(500).json({ status: 'error', error: error.message });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`

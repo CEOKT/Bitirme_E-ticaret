@@ -118,3 +118,111 @@ Colors: undefined
 Sizes: undefined
 Memories: undefined
 
+PUT Time: 2025-12-12T11:15:58.161Z
+ID: 27
+Variants: [{"attributes":{"Renk":"Siyah","Kayış":"Deri"},"price":2999,"stock":2,"sku":""},{"attributes":{"Renk":"Siyah","Kayış":"Metal"},"price":2999,"stock":2,"sku":""},{"attributes":{"Renk":"Mavi","Kayış":"Deri"},"price":2999,"stock":3,"sku":""},{"attributes":{"Renk":"Mavi","Kayış":"Metal"},"price":2999,"stock":0,"sku":""}]
+
+PUT Time: 2025-12-12T11:25:18.244Z
+ID: 27
+Variants: [{"attributes":{"Renk":"Siyah","Kayış":"Deri"},"price":2999,"stock":2,"sku":"27-V1"},{"attributes":{"Renk":"Siyah","Kayış":"Metal"},"price":2999,"stock":2,"sku":"27-V2"},{"attributes":{"Renk":"Mavi","Kayış":"Deri"},"price":2999,"stock":3,"sku":"27-V3"},{"attributes":{"Renk":"Mavi","Kayış":"Metal"},"price":2999,"stock":0,"sku":"27-V4"}]
+
+PUT Time: 2025-12-12T11:25:43.032Z
+ID: 27
+Variants: [{"attributes":{"Renk":"Siyah","Kayış":"Deri"},"price":3000,"stock":2,"sku":"27-V1"},{"attributes":{"Renk":"Siyah","Kayış":"Metal"},"price":2999,"stock":2,"sku":"27-V2"},{"attributes":{"Renk":"Mavi","Kayış":"Deri"},"price":2999,"stock":3,"sku":"27-V3"},{"attributes":{"Renk":"Mavi","Kayış":"Metal"},"price":2599,"stock":0,"sku":"27-V4"}]
+
+PUT Time: 2025-12-23T12:49:30.247Z
+ID: 27
+Variants: [{"attributes":{"Renk":"Siyah","Kayış":"Deri"},"price":3000,"stock":2,"sku":"27-V1"},{"attributes":{"Renk":"Siyah","Kayış":"Metal"},"price":2999,"stock":2,"sku":"27-V2"},{"attributes":{"Renk":"Mavi","Kayış":"Deri"},"price":2999,"stock":2,"sku":"27-V3"},{"attributes":{"Renk":"Mavi","Kayış":"Metal"},"price":2599,"stock":0,"sku":"27-V4"}]
+
+PUT Time: 2025-12-23T12:50:20.346Z
+ID: 26
+Variants: [{"attributes":{"Renk":"siyah"},"price":1299,"stock":10,"sku":""},{"attributes":{"Renk":"mavi"},"price":1299,"stock":10,"sku":""},{"attributes":{"Renk":"beyaz"},"price":1299,"stock":15,"sku":""}]
+
+PUT Time: 2025-12-23T12:51:11.141Z
+ID: 25
+Variants: [{"attributes":{"GB":"512","Renk":"Uzay grisi"},"price":34999,"stock":10,"sku":""},{"attributes":{"GB":"512","Renk":"beyaz"},"price":34999,"stock":10,"sku":""},{"attributes":{"GB":"512","Renk":"siyah"},"price":34999,"stock":10,"sku":""},{"attributes":{"GB":"1T","Renk":"Uzay grisi"},"price":34999,"stock":10,"sku":""},{"attributes":{"GB":"1T","Renk":"beyaz"},"price":34999,"stock":10,"sku":""},{"attributes":{"GB":"1T","Renk":"siyah"},"price":34999,"stock":10,"sku":""}]
+
+PUT Time: 2025-12-23T12:58:41.376Z
+ID: 1
+Variants: []
+
+PUT Time: 2025-12-23T12:58:43.593Z
+ID: 2
+Variants: []
+
+PUT Time: 2025-12-23T12:58:45.408Z
+ID: 3
+Variants: []
+
+PUT Time: 2025-12-23T12:58:47.376Z
+ID: 4
+Variants: []
+
+PUT Time: 2025-12-23T12:58:49.151Z
+ID: 5
+Variants: []
+
+PUT Time: 2025-12-23T12:58:51.037Z
+ID: 6
+Variants: []
+
+PUT Time: 2025-12-23T12:58:54.060Z
+ID: 7
+Variants: []
+
+PUT Time: 2025-12-23T12:58:55.652Z
+ID: 8
+Variants: []
+
+PUT Time: 2025-12-23T12:58:57.444Z
+ID: 9
+Variants: []
+
+PUT Time: 2025-12-23T12:59:00.738Z
+ID: 14
+Variants: []
+
+PUT Time: 2025-12-23T12:59:02.578Z
+ID: 12
+Variants: []
+
+PUT Time: 2025-12-23T12:59:04.122Z
+ID: 12
+Variants: []
+
+PUT Time: 2025-12-23T12:59:05.745Z
+ID: 11
+Variants: []
+
+PUT Time: 2025-12-23T12:59:08.170Z
+ID: 10
+Variants: []
+
+PUT Time: 2025-12-23T12:59:10.320Z
+ID: 13
+Variants: []
+
+PUT Time: 2025-12-23T12:59:12.862Z
+ID: 15
+Variants: []
+
+PUT Time: 2025-12-23T12:59:16.020Z
+ID: 16
+Variants: []
+
+PUT Time: 2025-12-23T12:59:17.635Z
+ID: 17
+Variants: []
+
+PUT Time: 2025-12-23T12:59:20.126Z
+ID: 18
+Variants: []
+
+PUT Time: 2025-12-23T12:59:22.113Z
+ID: 19
+Variants: []
+
+PUT Time: 2025-12-25T13:32:08.132Z
+ID: 20
+Variants: []
+

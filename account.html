@@ -114,40 +114,44 @@
 
 <body>
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
-                    <i class="fa-solid fa-heart logo-icon"></i>
-                    <span class="logo-text">Destifo</span>
-                </a>
-            </div>
+    <!-- Fixed Header Wrapper -->
+    <div class="fixed-header-wrapper">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                        <img src="images/logo.png" alt="Destifo Logo" style="height: 40px; margin-right: 8px;">
+                        <span class="logo-text">Destifo</span>
+                    </a>
+                </div>
 
-            <div class="search-bar">
-                <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
-                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
 
-            <div class="header-actions">
-                <a href="account.html" class="action-item">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Hesabım</span>
-                </a>
-                <a href="favorites.html" class="action-item">
-                    <i class="fa-solid fa-heart"></i>
-                    <span>Favorilerim</span>
-                </a>
-                <a href="cart.html" class="action-item">
-                    <div class="cart-icon-wrapper">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span class="cart-count">0</span>
-                    </div>
-                    <span>Sepetim</span>
-                </a>
+                <div class="header-actions">
+                    <a href="account.html" class="action-item">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Hesabım</span>
+                    </a>
+                    <a href="favorites.html" class="action-item">
+                        <i class="fa-solid fa-heart"></i>
+                        <span>Favorilerim</span>
+                    </a>
+                    <a href="cart.html" class="action-item">
+                        <div class="cart-icon-wrapper">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                        <span>Sepetim</span>
+                    </a>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
+    </div>
 
     <!-- Breadcrumbs -->
     <div class="breadcrumbs container">
@@ -320,6 +324,11 @@
                             </div>
                         </div>
                     </div>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #1e3a5f;">Geçmiş Bağışlar</h3>
+                    <div id="donationsList" class="orders-list">
+                        <div style="text-align: center; padding: 2rem; color: #666;">Yükleniyor...</div>
+                    </div>
                 </div>
             </div>
 
@@ -342,70 +351,599 @@
 
     <!-- ADD ADDRESS MODAL -->
     <div id="addressModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
                 <h3>Yeni Adres Ekle</h3>
                 <span class="close-modal">&times;</span>
             </div>
             <form id="addressForm">
                 <div class="form-group">
-                    <label>Adres Başlığı</label>
-                    <input type="text" name="title" placeholder="Ev, İş vb." required
-                        style="width: 100%; padding: 0.5rem;">
+                    <label>Adres Başlığı *</label>
+                    <input type="text" name="title" placeholder="Ev, İş, Diğer..." required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Şehir *</label>
+                        <input type="text" name="city" placeholder="İstanbul" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div class="form-group">
+                        <label>İlçe *</label>
+                        <input type="text" name="district" placeholder="Kadıköy" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mahalle *</label>
+                        <input type="text" name="neighborhood" placeholder="Fenerbahçe Mahallesi" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Posta Kodu</label>
+                        <input type="text" name="postal_code" placeholder="34000" maxlength="5"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Şehir</label>
-                    <input type="text" name="city" required style="width: 100%; padding: 0.5rem;">
+                    <label>Sokak/Cadde *</label>
+                    <input type="text" name="street" placeholder="Atatürk Caddesi" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bina No *</label>
+                        <input type="text" name="building_no" placeholder="42" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Daire No</label>
+                        <input type="text" name="apartment_no" placeholder="5"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>İlçe</label>
-                    <input type="text" name="district" required style="width: 100%; padding: 0.5rem;">
+                    <label>Adres Tarifi (isteğe bağlı)</label>
+                    <textarea name="address_note" rows="2" placeholder="Kırmızı kapılı bina, giriş katta..."
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;"></textarea>
                 </div>
-                <div class="form-group">
-                    <label>Posta Kodu</label>
-                    <input type="text" name="postalCode" style="width: 100%; padding: 0.5rem;">
-                </div>
-                <div class="form-group">
-                    <label>Açık Adres</label>
-                    <textarea name="fullAddress" rows="3" required style="width: 100%; padding: 0.5rem;"></textarea>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">Kaydet</button>
+
+                <button type="submit" class="btn-primary"
+                    style="width: 100%; padding: 0.75rem; font-size: 16px; margin-top: 10px;">
+                    <i class="fa-solid fa-save"></i> Adresi Kaydet
+                </button>
             </form>
         </div>
     </div>
 
     <!-- ADD CARD MODAL -->
     <div id="cardModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h3>Yeni Kart Ekle</h3>
                 <span class="close-modal">&times;</span>
             </div>
             <form id="cardForm">
                 <div class="form-group">
-                    <label>Kart Üzerindeki İsim</label>
-                    <input type="text" name="cardName" required style="width: 100%; padding: 0.5rem;">
+                    <label>Kart Üzerindeki İsim *</label>
+                    <input type="text" name="cardName" placeholder="AHMET YILMAZ" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; text-transform: uppercase;">
                 </div>
                 <div class="form-group">
-                    <label>Kart Numarası</label>
+                    <label>Kart Numarası *</label>
                     <input type="text" name="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" required
-                        style="width: 100%; padding: 0.5rem;">
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-family: monospace; font-size: 16px;">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Son Kullanma Tarihi</label>
+                        <label>Son Kullanma Tarihi *</label>
                         <input type="text" name="expiryDate" placeholder="AA/YY" maxlength="5" required
-                            style="width: 100%; padding: 0.5rem;">
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-family: monospace;">
+                    </div>
+                    <div class="form-group">
+                        <label>CVV <small style="color: #999;">(kaydetmez)</small></label>
+                        <input type="text" placeholder="***" maxlength="3" disabled
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #eee; border-radius: 8px; background: #f5f5f5; font-family: monospace;">
                     </div>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">Kaydet</button>
+                <button type="submit" class="btn-primary"
+                    style="width: 100%; padding: 0.75rem; font-size: 16px; margin-top: 10px;">
+                    <i class="fa-solid fa-save"></i> Kartı Kaydet
+                </button>
             </form>
+
         </div>
     </div>
 
     <script src="js/api.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/account.js"></script>
+    <script>
+        // Inline Account Logic (replaces deleted account.js)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('destifo_token');
+            if (!token) {
+                document.getElementById('guest-view').style.display = 'block';
+                document.getElementById('account-dashboard').style.display = 'none';
+                return;
+            }
+
+            // Tab Switching
+            const tabs = document.querySelectorAll('.account-nav-item[data-tab]');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.tab;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const content = document.getElementById(target);
+                    if (content) content.classList.add('active');
+
+                    if (target === 'orders') loadOrders();
+                    if (target === 'donations') loadDonations();
+                    if (target === 'addresses') loadAddresses();
+                    if (target === 'payment') loadCards();
+                });
+            });
+
+            // Check URL hash
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                const tab = document.querySelector(`.account-nav-item[data-tab="${hash}"]`);
+                if (tab) tab.click();
+            } else {
+                if (document.querySelector('[data-tab="profile"]'))
+                    document.querySelector('[data-tab="profile"]').click();
+            }
+
+            // Auto load if matching tab
+            if (hash === 'orders') loadOrders();
+            if (hash === 'donations') loadDonations();
+
+            // Always load profile
+            loadProfile();
+
+            // Modal Toggles
+            const addressModal = document.getElementById('addressModal');
+            const cardModal = document.getElementById('cardModal');
+
+            document.getElementById('addAddressBtn').onclick = () => addressModal.classList.add('active');
+            document.getElementById('addCardBtn').onclick = () => cardModal.classList.add('active');
+
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.onclick = () => {
+                    addressModal.classList.remove('active');
+                    cardModal.classList.remove('active');
+                };
+            });
+
+            // Address Form Handler
+            document.getElementById('addressForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+
+                // Construct full address from granular fields
+                data.fullAddress = `${data.neighborhood || ''}, ${data.street || ''} No:${data.building_no || ''}${data.apartment_no ? '/' + data.apartment_no : ''} ${data.district || ''}/${data.city || ''}`;
+                data.fullAddress += data.address_note ? ` (${data.address_note})` : '';
+
+                const isEdit = !!e.target.dataset.id;
+                const url = isEdit ? `/api/user/addresses/${e.target.dataset.id}` : '/api/user/addresses';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                try {
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        addressModal.classList.remove('active');
+                        e.target.reset();
+                        delete e.target.dataset.id; // clear edit mode
+                        document.querySelector('#addressModal h3').textContent = 'Yeni Adres Ekle'; // reset title
+                        document.querySelector('#addressForm button').textContent = 'Adresi Kaydet'; // reset btn
+                        loadAddresses();
+                    } else {
+                        alert('İşlem sırasında bir hata oluştu.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+
+            // Card Form Handler
+            document.getElementById('cardForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+
+                const isEdit = !!e.target.dataset.id;
+                const url = isEdit ? `/api/user/cards/${e.target.dataset.id}` : '/api/user/cards';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                try {
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        cardModal.classList.remove('active');
+                        e.target.reset();
+                        delete e.target.dataset.id;
+                        document.querySelector('#cardModal h3').textContent = 'Yeni Kart Ekle';
+                        document.querySelector('#cardForm button').textContent = 'Kartı Kaydet';
+                        loadCards();
+                    } else {
+                        alert('İşlem sırasında bir hata oluştu.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+
+            // ... (rest of code)
+
+            window.editCard = (id, card_holder, cardNumberMasked, expiry) => {
+                const form = document.getElementById('cardForm');
+                form.dataset.id = id;
+                form.cardName.value = card_holder; // Fix: cardName, not card_holder
+                form.cardNumber.value = '';
+                form.cardNumber.placeholder = cardNumberMasked;
+                form.expiryDate.value = expiry; // Fix: expiryDate, not expiry
+
+                document.querySelector('#cardModal h3').textContent = 'Kartı Düzenle';
+                document.querySelector('#cardForm button').textContent = 'Güncelle';
+                document.getElementById('cardModal').classList.add('active');
+            };
+
+            // Load initial tab data
+            if (hash === 'addresses') loadAddresses();
+            if (hash === 'payment') loadCards();
+
+            // Profile Update Handler
+            document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Güncelleniyor...';
+
+                const data = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value
+                };
+
+                try {
+                    const res = await fetch('/api/user/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        alert('Profil bilgileriniz güncellendi.');
+                        loadProfile(); // Refresh display
+                    } else {
+                        alert(result.error || 'Güncelleme başarısız.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Bir hata oluştu.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
+
+            // Auto-format for Expiry Date
+            const expiryInput = document.querySelector('input[name="expiryDate"]');
+            if (expiryInput) {
+                expiryInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                    }
+                    e.target.value = value;
+                });
+            }
+        });
+
+        // Global functions for inline onclick handlers
+        window.deleteAddress = async (id) => {
+            if (!confirm('Bu adresi silmek istediğinize emin misiniz?')) return;
+            const token = localStorage.getItem('destifo_token');
+            try {
+                const res = await fetch(`/api/user/addresses/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) loadAddresses();
+                else alert('Silinemedi.');
+            } catch (e) { console.error(e); }
+        };
+
+        window.editAddress = (id, title, fullAddress, district, city, postalCode, buildingNo, apartmentNo, addressNote) => {
+            const form = document.getElementById('addressForm');
+            form.dataset.id = id;
+            form.title.value = title;
+            // database doesn't store granular parts, so we put full address in street as fallback
+            form.street.value = fullAddress || '';
+            form.district.value = district || '';
+            form.city.value = city || '';
+            form.postal_code.value = postalCode || '';
+            form.building_no.value = ''; // lost data
+            form.apartment_no.value = ''; // lost data
+            form.neighborhood.value = ''; // lost data
+            form.address_note.value = addressNote || '';
+
+            document.querySelector('#addressModal h3').textContent = 'Adresi Düzenle';
+            document.querySelector('#addressForm button').textContent = 'Güncelle';
+            document.getElementById('addressModal').classList.add('active');
+        };
+
+        window.deleteCard = async (id) => {
+            if (!confirm('Bu kartı silmek istediğinize emin misiniz?')) return;
+            const token = localStorage.getItem('destifo_token');
+            try {
+                const res = await fetch(`/api/user/cards/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) loadCards();
+                else alert('Silinemedi.');
+            } catch (e) { console.error(e); }
+        };
+
+
+        async function loadProfile() {
+            const token = localStorage.getItem('destifo_token');
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const user = await res.json();
+
+                if (user.error) throw new Error(user.error);
+
+                // Populate form
+                document.getElementById('firstName').value = user.firstName || '';
+                document.getElementById('lastName').value = user.lastName || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('phone').value = user.phone || '';
+
+                // Update sidebar info
+                const sidebarName = document.querySelector('.user-info h3');
+                const sidebarEmail = document.querySelector('.user-info p');
+                if (sidebarName) sidebarName.textContent = `${user.firstName} ${user.lastName}`;
+                if (sidebarEmail) sidebarEmail.textContent = user.email;
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        async function loadAddresses() {
+            const list = document.getElementById('addressesList');
+            if (!list) return;
+            const token = localStorage.getItem('destifo_token');
+            list.innerHTML = '<div style="text-align: center; padding: 1rem;">Yükleniyor...</div>';
+
+            try {
+                const res = await fetch('/api/user/addresses', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const addresses = await res.json();
+
+                if (addresses.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; color: #666; padding: 1rem;">Kayıtlı adresiniz bulunmuyor.</div>';
+                    return;
+                }
+
+                list.innerHTML = addresses.map(addr => `
+                    <div class="address-card ${addr.isDefault ? 'default' : ''}" style="position: relative;">
+                         <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 8px;">
+                            <button onclick="editAddress(${addr.id}, '${addr.title}', '${addr.fullAddress}', '${addr.district}', '${addr.city}', '${addr.postalCode}', '${addr.building_no || ''}', '${addr.apartment_no || ''}', '${addr.address_note || ''}')" style="background: none; border: none; color: #1e3a5f; cursor: pointer;"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteAddress(${addr.id})" style="background: none; border: none; color: #d32f2f; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div style="font-weight: 700; margin-bottom: 5px; padding-right: 60px;">
+                            ${addr.title} 
+                            ${addr.isDefault ? '<span class="default-badge">Varsayılan</span>' : ''}
+                        </div>
+                        <div style="font-size: 14px; color: #555; line-height: 1.5;">
+                            ${addr.fullAddress} <br>
+                            ${addr.district} / ${addr.city}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                list.innerHTML = 'Adresler yüklenemedi.';
+            }
+        }
+
+        async function loadCards() {
+            const list = document.getElementById('cardsList');
+            if (!list) return;
+            const token = localStorage.getItem('destifo_token');
+            list.innerHTML = '<div style="text-align: center; padding: 1rem;">Yükleniyor...</div>';
+
+            try {
+                const res = await fetch('/api/user/cards', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cards = await res.json();
+
+                if (cards.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; color: #666; padding: 1rem;">Kayıtlı kartınız bulunmuyor.</div>';
+                    return;
+                }
+
+                list.innerHTML = cards.map(c => `
+                    <div class="payment-card-item" style="position: relative;">
+                         <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 2;">
+                            <button onclick="editCard(${c.id}, '${c.cardName}', '${c.cardNumberMasked}', '${c.expiryDate}')" style="background: none; border: none; color: #1e3a5f; cursor: pointer;"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCard(${c.id})" style="background: none; border: none; color: #d32f2f; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div style="font-weight: 700; margin-bottom: 5px;">${c.cardName}</div>
+                        <div style="font-family: monospace; font-size: 16px; color: #333; margin-bottom: 5px;">
+                            ${c.cardNumberMasked}
+                        </div>
+                        <div style="font-size: 13px; color: #888;">
+                            SKT: ${c.expiryDate}
+                        </div>
+                        <i class="fa-brands fa-cc-${c.cardType}" style="position: absolute; bottom: 1.5rem; right: 1.5rem; font-size: 24px; color: #1e3a5f;"></i>
+                    </div>
+                `).join('');
+            } catch (error) {
+                list.innerHTML = 'Kartlar yüklenemedi.';
+            }
+        }
+
+        async function loadOrders() {
+            const list = document.getElementById('ordersList');
+            if (!list) return;
+            const token = localStorage.getItem('destifo_token');
+            list.innerHTML = '<div style="text-align: center; padding: 2rem;">Yükleniyor...</div>';
+
+            try {
+                const res = await fetch('/api/user/orders', { headers: { 'Authorization': `Bearer ${token}` } });
+                const orders = await res.json();
+
+                if (orders.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Henüz siparişiniz yok.</div>';
+                    return;
+                }
+
+                list.innerHTML = orders.map(order => `
+                    <div class="order-card" style="border: 1px solid #eee; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
+                        <div class="order-header" style="background: #f8f9fa; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                            <div>
+                                <div style="font-size: 13px; color: #666;">Sipariş Tarihi</div>
+                                <div style="font-weight: 500;">${new Date(order.created_at).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #666;">Tutar</div>
+                                <div style="font-weight: 600; color: #1e3a5f;">${order.total_amount}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #666;">Durum</div>
+                                <span class="badge" 
+                                      style="background: ${order.status === 'paid' ? '#e8f5e9' : '#fff3e0'}; color: ${order.status === 'paid' ? '#2e7d32' : '#e65100'}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                    ${order.status === 'paid' ? 'Ödendi' : order.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="order-items" style="padding: 15px;">
+                            ${order.items.map(item => `
+                                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                                    <img src="${item.image || 'images/placeholder.png'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                    <div>
+                                        <div style="font-weight: 500;">${item.title}</div>
+                                        <div style="font-size: 13px; color: #888;">${item.quantity} adet x ${item.price} TL</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                list.innerHTML = 'Siparişler yüklenemedi.';
+            }
+        }
+
+        async function loadDonations() {
+            const list = document.getElementById('donationsList');
+            const totalDonationEl = document.getElementById('totalDonation');
+            const orderCountEl = document.getElementById('orderCount');
+            const orgCountEl = document.getElementById('orgCount');
+            if (!list) return;
+            const token = localStorage.getItem('destifo_token');
+
+            try {
+                const res = await fetch('/api/user/donations', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+
+                // Calculate summary statistics
+                let totalAmount = 0;
+                const uniqueOrgs = new Set();
+
+                data.forEach(d => {
+                    // Parse amount (could be "100,00 TL" or number)
+                    let amount = 0;
+                    if (typeof d.amount === 'number') {
+                        amount = d.amount;
+                    } else if (typeof d.amount === 'string') {
+                        amount = parseFloat(d.amount.replace('.', '').replace(',', '.').replace(' TL', '')) || 0;
+                    }
+                    totalAmount += amount;
+                    if (d.organization) uniqueOrgs.add(d.organization);
+                });
+
+                // Update stats UI
+                if (totalDonationEl) totalDonationEl.textContent = totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+                if (orderCountEl) orderCountEl.textContent = data.length.toString();
+                if (orgCountEl) orgCountEl.textContent = uniqueOrgs.size.toString();
+
+                if (data.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Henüz bağışınız bulunmuyor.</div>';
+                    return;
+                }
+
+                list.innerHTML = data.map(d => `
+                    <div class="order-item" style="border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1e3a5f;">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${d.organization || 'Genel Bağış'}</div>
+                                <div style="font-size: 13px; color: #888;">${new Date(d.date).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight: 700; color: #1e3a5f;">${d.amount}</div>
+                    </div>
+                 `).join('');
+            } catch (e) {
+                list.innerHTML = 'Bağışlar yüklenemedi.';
+                console.error('Donations load error:', e);
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            if (window.logout) window.logout();
+            else {
+                localStorage.removeItem('destifo_token');
+                localStorage.removeItem('destifo_user');
+                localStorage.removeItem('destifo_session_id');
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
 </body>
 
 </html>

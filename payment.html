@@ -138,23 +138,179 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Success Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .success-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .success-card {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .success-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+
+        .success-icon {
+            font-size: 40px;
+            color: white;
+        }
+
+        .success-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .success-message {
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .donation-details-box {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 2px solid #e9ecef;
+            position: relative;
+        }
+
+        .impact-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+        }
+
+        .donation-amount-large {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+            letter-spacing: -1px;
+        }
+
+        .donation-org {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-success-modal {
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
-                    <i class="fa-solid fa-heart logo-icon"></i>
-                    <span class="logo-text">Destifo</span>
-                </a>
+    <!-- Fixed Header Wrapper -->
+    <div class="fixed-header-wrapper">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                        <img src="images/logo.png" alt="Destifo Logo" style="height: 40px; margin-right: 8px;">
+                        <span class="logo-text">Destifo</span>
+                    </a>
+                </div>
+                <!-- Simplified header for checkout -->
             </div>
-            <!-- Simplified header for checkout -->
-        </div>
-    </header>
+        </header>
+    </div>
 
     <!-- Breadcrumbs -->
     <div class="breadcrumbs container">
@@ -170,31 +326,74 @@
             <form id="payment-form">
                 <div class="form-group">
                     <label class="form-label">Kart Üzerindeki İsim</label>
-                    <input type="text" class="form-input" placeholder="Ad Soyad" required>
+                    <input type="text" id="card-name" class="form-input" placeholder="Ad Soyad" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Kart Numarası</label>
-                    <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                    <input type="text" id="card-number" class="form-input" placeholder="0000 0000 0000 0000"
+                        maxlength="19" required>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Son Kullanma Tarihi</label>
-                        <input type="text" class="form-input" placeholder="AA/YY" maxlength="5" required>
+                        <input type="text" id="card-expiry" class="form-input" placeholder="AA/YY" maxlength="5"
+                            required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">CVV</label>
-                        <input type="text" class="form-input" placeholder="123" maxlength="3" required>
+                        <input type="text" id="card-cvv" class="form-input" placeholder="123" maxlength="3" required>
                     </div>
                 </div>
 
                 <h2 class="payment-title" style="margin-top: 2rem;">Teslimat Adresi</h2>
                 <div class="form-group">
-                    <label class="form-label">Adres Başlığı</label>
-                    <input type="text" class="form-input" placeholder="Ev, İş vb." required>
+                    <label class="form-label">Adres Başlığı *</label>
+                    <input type="text" id="address-title" class="form-input" placeholder="Ev, İş, Diğer..." required>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Şehir *</label>
+                        <input type="text" id="address-city" class="form-input" placeholder="İstanbul" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">İlçe *</label>
+                        <input type="text" id="address-district" class="form-input" placeholder="Kadıköy" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Mahalle *</label>
+                        <input type="text" id="address-neighborhood" class="form-input"
+                            placeholder="Fenerbahçe Mahallesi" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Posta Kodu</label>
+                        <input type="text" id="address-postal" class="form-input" placeholder="34000" maxlength="5">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">Açık Adres</label>
-                    <textarea class="form-input" rows="3" placeholder="Mahalle, Sokak, No..." required></textarea>
+                    <label class="form-label">Sokak/Cadde *</label>
+                    <input type="text" id="address-street" class="form-input" placeholder="Atatürk Caddesi" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Bina No *</label>
+                        <input type="text" id="address-building" class="form-input" placeholder="42" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Daire No</label>
+                        <input type="text" id="address-apartment" class="form-input" placeholder="5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adres Tarifi (isteğe bağlı)</label>
+                    <textarea id="address-note" class="form-input" rows="2"
+                        placeholder="Kırmızı kapılı bina, giriş katta..."></textarea>
                 </div>
             </form>
         </div>
@@ -252,7 +451,33 @@
     <script src="js/products_data.js"></script>
     <script src="js/api.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/payment.js"></script>
+    <!-- Add Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="js/payment.js?v=17"></script>
+
+    <!-- Success Modal Structure -->
+    <div class="modal-overlay" id="successModal">
+        <div class="success-card">
+            <div class="success-icon-wrapper">
+                <i class="fa-solid fa-check success-icon"></i>
+            </div>
+            <h2 class="success-title">Harikasın!</h2>
+            <p class="success-message">Bağışınla bir hayata umut oldun. Desteğin için sonsuz teşekkürler.</p>
+
+            <div class="donation-details-box">
+                <div class="impact-badge"><i class="fa-solid fa-star"></i> Kahraman Rozeti</div>
+                <div class="donation-amount-large" id="modal-amount">0.00 TL</div>
+                <div class="donation-org">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span id="modal-org">Kurum Adı</span>
+                </div>
+            </div>
+
+            <button class="btn-success-modal" id="modal-continue-btn">
+                Gönül Rahatlığıyla Devam Et <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+            </button>
+        </div>
+    </div>
 </body>
 
 </html>

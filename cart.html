@@ -16,55 +16,44 @@
 
 <body>
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
-                    <i class="fa-solid fa-heart logo-icon"></i>
-                    <span class="logo-text">Destifo</span>
-                </a>
-            </div>
+    <!-- Fixed Header Wrapper -->
+    <div class="fixed-header-wrapper">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                        <img src="images/logo.png" alt="Destifo Logo" style="height: 40px; margin-right: 8px;">
+                        <span class="logo-text">Destifo</span>
+                    </a>
+                </div>
 
-            <div class="search-bar">
-                <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
-                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Ürün, kategori veya bağış kurumu ara...">
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
 
-            <div class="header-actions">
-                <a href="account.html" class="action-item">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Hesabım</span>
-                </a>
-                <a href="favorites.html" class="action-item">
-                    <i class="fa-solid fa-heart"></i>
-                    <span>Favorilerim</span>
-                </a>
-                <a href="cart.html" class="action-item">
-                    <div class="cart-icon-wrapper">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span class="cart-count">0</span>
-                    </div>
-                    <span>Sepetim</span>
-                </a>
+                <div class="header-actions">
+                    <a href="account.html" class="action-item">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Hesabım</span>
+                    </a>
+                    <a href="favorites.html" class="action-item">
+                        <i class="fa-solid fa-heart"></i>
+                        <span>Favorilerim</span>
+                    </a>
+                    <a href="cart.html" class="action-item">
+                        <div class="cart-icon-wrapper">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                        <span>Sepetim</span>
+                    </a>
+                </div>
             </div>
-        </div>
-    </header>
-
-    <!-- Navigation Section -->
-    <nav class="main-nav">
-        <div class="container nav-inner">
-            <a href="#" class="nav-item special-item"><i class="fa-solid fa-hand-holding-heart"></i> İyilik
-                Fırsatları</a>
-            <a href="#" class="nav-item">Kadın</a>
-            <a href="#" class="nav-item">Erkek</a>
-            <a href="#" class="nav-item">Çocuk & Bebek</a>
-            <a href="#" class="nav-item">Ayakkabı & Çanta</a>
-            <a href="#" class="nav-item">Saat & Aksesuar</a>
-            <a href="#" class="nav-item">Kozmetik</a>
-            <a href="#" class="nav-item">Ev & Yaşam</a>
-        </div>
-    </nav>
+        </header>
+    </div>
 
     <!-- Breadcrumbs -->
     <div class="breadcrumbs container">
@@ -80,6 +69,81 @@
 
                 <div id="cart-items" class="cart-items">
                     <!-- Cart items will be loaded here by JavaScript -->
+                </div>
+
+                <!-- DONATION SELECTION SECTION -->
+                <div id="donation-section" class="donation-selection-section"
+                    style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #e8f5e9 0%, #fff8e1 100%); border-radius: 16px; border: 2px solid #4caf50; display: none;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+                        <div
+                            style="width: 50px; height: 50px; background: linear-gradient(135deg, #4caf50, #8bc34a); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-hand-holding-heart" style="color: white; font-size: 22px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; color: #2e7d32; font-size: 1.2rem;">Bağış Yapmak İster Misiniz?</h3>
+                            <p style="margin: 0; color: #666; font-size: 0.9rem;">Siparişinize ekstra bağış
+                                ekleyebilirsiniz</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Bağış Kuruluşu
+                            Seçin</label>
+                        <select id="donation-org"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; background: white; cursor: pointer;">
+                            <option value="">-- Kuruluş Seç --</option>
+                            <option value="TEGV">📚 TEGV - Türkiye Eğitim Gönüllüleri</option>
+                            <option value="TEMA">🌳 TEMA - Türkiye Erozyonla Mücadele</option>
+                            <option value="LOSEV">💜 LÖSEV - Lösemili Çocuklar Vakfı</option>
+                            <option value="KIZILAY">🌙 Türk Kızılay</option>
+                            <option value="UNICEF">🦋 UNICEF Türkiye</option>
+                            <option value="AHBAP">🤝 AHBAP Derneği</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Bağış
+                            Miktarı</label>
+                        <div id="donation-amounts" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <button type="button" class="donation-amount-btn" data-amount="5"
+                                style="flex: 1; min-width: 70px; padding: 12px 16px; border: 2px solid #4caf50; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">5
+                                ₺</button>
+                            <button type="button" class="donation-amount-btn" data-amount="10"
+                                style="flex: 1; min-width: 70px; padding: 12px 16px; border: 2px solid #4caf50; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">10
+                                ₺</button>
+                            <button type="button" class="donation-amount-btn" data-amount="25"
+                                style="flex: 1; min-width: 70px; padding: 12px 16px; border: 2px solid #4caf50; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">25
+                                ₺</button>
+                            <button type="button" class="donation-amount-btn" data-amount="50"
+                                style="flex: 1; min-width: 70px; padding: 12px 16px; border: 2px solid #4caf50; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">50
+                                ₺</button>
+                            <button type="button" class="donation-amount-btn" data-amount="100"
+                                style="flex: 1; min-width: 70px; padding: 12px 16px; border: 2px solid #4caf50; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">100
+                                ₺</button>
+                        </div>
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="custom-donation" placeholder="Özel miktar..." min="1"
+                                style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                            <span style="color: #666;">₺</span>
+                        </div>
+                    </div>
+
+                    <div id="donation-preview"
+                        style="display: none; padding: 12px; background: white; border-radius: 10px; border-left: 4px solid #4caf50;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-weight: 600; color: #2e7d32;" id="preview-org">TEGV</span>
+                                <span style="color: #666;"> kurulusuna </span>
+                            </div>
+                            <span style="font-size: 1.3rem; font-weight: 700; color: #4caf50;" id="preview-amount">25
+                                ₺</span>
+                        </div>
+                    </div>
+
+                    <button type="button" id="clear-donation-btn"
+                        style="display: none; margin-top: 10px; padding: 8px 16px; background: #f5f5f5; border: none; border-radius: 8px; color: #666; cursor: pointer; font-size: 0.9rem;">
+                        <i class="fa-solid fa-times"></i> Bağışı Kaldır
+                    </button>
                 </div>
 
                 <div id="empty-cart" class="empty-state" style="display: none;">
@@ -172,6 +236,25 @@
         </div>
     </footer>
 
+    <!-- VALIDATION MODAL -->
+    <div id="validationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Eksik Seçenekler</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666;">Sepetinizdeki bazı ürünler için seçenek (renk, beden vb.)
+                    belirtilmemiş. Devam etmek için lütfen seçim yapınız.</p>
+                <div id="validationList" class="validation-list">
+                    <!-- Items injected here -->
+                </div>
+                <button id="saveVariantsBtn" class="btn-primary" style="width: 100%; margin-top: 20px;">Seçimleri
+                    Kaydet</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/products_data.js"></script>
     <script src="js/api.js"></script>
     <script src="js/cart.js"></script>
@@ -262,19 +345,39 @@
                         const selectedColor = item.selected_color || '';
                         const selectedSize = item.selected_size || '';
                         const selectedMemory = item.selected_memory || '';
+                        const selectedAttributes = item.selected_attributes || {};
 
+                        // Build variant badges dynamically
                         let variantHtml = '';
-                        if (selectedColor) variantHtml += `<span class="variant-badge" style="background:#e74c3c;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Renk: ${selectedColor}</span>`;
-                        if (selectedSize) variantHtml += `<span class="variant-badge" style="background:#3498db;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Beden: ${selectedSize}</span>`;
-                        if (selectedMemory) variantHtml += `<span class="variant-badge" style="background:#9b59b6;color:white;padding:2px 8px;border-radius:4px;margin-right:4px;font-size:11px;">Hafıza: ${selectedMemory}</span>`;
+                        if (selectedColor) variantHtml += `<span class="variant-badge" style="background:#e74c3c;color:white;padding:4px 10px;border-radius:6px;margin-right:6px;font-size:12px;display:inline-block;margin-bottom:4px;">Renk: ${selectedColor}</span>`;
+                        if (selectedSize) variantHtml += `<span class="variant-badge" style="background:#3498db;color:white;padding:4px 10px;border-radius:6px;margin-right:6px;font-size:12px;display:inline-block;margin-bottom:4px;">Beden: ${selectedSize}</span>`;
+                        if (selectedMemory) variantHtml += `<span class="variant-badge" style="background:#9b59b6;color:white;padding:4px 10px;border-radius:6px;margin-right:6px;font-size:12px;display:inline-block;margin-bottom:4px;">Hafıza: ${selectedMemory}</span>`;
+
+                        // Add dynamic attributes
+                        if (selectedAttributes && typeof selectedAttributes === 'object') {
+                            const colors = ['#16a085', '#e67e22', '#f39c12', '#8e44ad'];
+                            let colorIndex = 0;
+                            for (const [key, value] of Object.entries(selectedAttributes)) {
+                                if (key === 'Renk' && selectedColor) continue;
+                                if (key === 'Beden' && selectedSize) continue;
+                                if (key === 'Hafıza' && selectedMemory) continue;
+                                const bgColor = colors[colorIndex % colors.length];
+                                variantHtml += `<span class="variant-badge" style="background:${bgColor};color:white;padding:4px 10px;border-radius:6px;margin-right:6px;font-size:12px;display:inline-block;margin-bottom:4px;">${key}: ${value}</span>`;
+                                colorIndex++;
+                            }
+                        }
 
                         html += `
                             <div class="cart-item" data-id="${product.id}" data-cart-id="${item.id || ''}">
-                                <img src="${product.image}" alt="${product.title}" class="cart-item-image">
+                                <a href="product.html?id=${product.id}" style="text-decoration: none;">
+                                    <img src="${product.image}" alt="${product.title}" class="cart-item-image" style="cursor: pointer;">
+                                </a>
                                 <div class="cart-item-details">
                                     <span class="cart-item-brand">${product.brand}</span>
-                                    <h4 class="cart-item-title">${product.title}</h4>
-                                    ${variantHtml ? `<div class="cart-item-variants" style="margin-top:4px;">${variantHtml}</div>` : ''}
+                                    <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
+                                        <h4 class="cart-item-title" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='inherit'">${product.title}</h4>
+                                    </a>
+                                    ${variantHtml ? `<div class="cart-item-variants" style="margin-top:8px; margin-bottom:8px;">${variantHtml}</div>` : ''}
                                     <div class="cart-item-price">${displayPrice}</div>
                                 </div>
                                 <div class="cart-item-quantity">
@@ -336,6 +439,143 @@
                     Cart.removeItem(productId);
                 }
                 renderCart();
+            };
+
+            // ============ DONATION LOGIC ============
+            const donationSection = document.getElementById('donation-section');
+            const donationOrgSelect = document.getElementById('donation-org');
+            const donationAmountBtns = document.querySelectorAll('.donation-amount-btn');
+            const customDonationInput = document.getElementById('custom-donation');
+            const donationPreview = document.getElementById('donation-preview');
+            const previewOrg = document.getElementById('preview-org');
+            const previewAmount = document.getElementById('preview-amount');
+            const clearDonationBtn = document.getElementById('clear-donation-btn');
+
+            let selectedDonationAmount = 0;
+            let selectedDonationOrg = '';
+
+            function updateDonationUI() {
+                // Update preview
+                if (selectedDonationOrg && selectedDonationAmount > 0) {
+                    previewOrg.textContent = selectedDonationOrg;
+                    previewAmount.textContent = selectedDonationAmount + ' ₺';
+                    donationPreview.style.display = 'block';
+                    clearDonationBtn.style.display = 'inline-block';
+                } else {
+                    donationPreview.style.display = 'none';
+                    clearDonationBtn.style.display = 'none';
+                }
+
+                // Get current subtotal
+                const subtotalText = subtotalEl.textContent.replace('.', '').replace(',', '.').replace(' TL', '');
+                const subtotalVal = parseFloat(subtotalText) || 0;
+
+                // Calculate product donation (15% of subtotal)
+                const productDonation = subtotalVal * 0.15;
+
+                // Total donation = Product Percentage + Extra Selected
+                const totalDonationToShow = productDonation + selectedDonationAmount;
+
+                // Update cart summary donation total
+                donationEl.textContent = totalDonationToShow.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+
+                // Update grand total (subtotal + EXTRA donation only)
+                // Product donation is already inside subtotal logic (informational)
+                const newGrandTotal = subtotalVal + selectedDonationAmount;
+                grandTotalEl.textContent = newGrandTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+
+                // Save to localStorage for payment page
+                if (selectedDonationAmount > 0 && selectedDonationOrg) {
+                    localStorage.setItem('destifo_cart_donation', JSON.stringify({
+                        amount: selectedDonationAmount,
+                        organization: selectedDonationOrg
+                    }));
+                } else {
+                    localStorage.removeItem('destifo_cart_donation');
+                }
+            }
+
+            // Amount button clicks
+            donationAmountBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Deselect all
+                    donationAmountBtns.forEach(b => {
+                        b.style.background = 'white';
+                        b.style.color = '#333';
+                    });
+                    // Select this one
+                    btn.style.background = '#4caf50';
+                    btn.style.color = 'white';
+                    selectedDonationAmount = parseInt(btn.dataset.amount);
+                    customDonationInput.value = '';
+                    updateDonationUI();
+                });
+            });
+
+            // Custom amount input
+            customDonationInput.addEventListener('input', () => {
+                const val = parseInt(customDonationInput.value) || 0;
+                // Deselect preset buttons
+                donationAmountBtns.forEach(b => {
+                    b.style.background = 'white';
+                    b.style.color = '#333';
+                });
+                selectedDonationAmount = val;
+                updateDonationUI();
+            });
+
+            // Org selection
+            donationOrgSelect.addEventListener('change', () => {
+                selectedDonationOrg = donationOrgSelect.value;
+                updateDonationUI();
+            });
+
+            // Clear donation
+            clearDonationBtn.addEventListener('click', () => {
+                selectedDonationAmount = 0;
+                selectedDonationOrg = '';
+                donationOrgSelect.value = '';
+                customDonationInput.value = '';
+                donationAmountBtns.forEach(b => {
+                    b.style.background = 'white';
+                    b.style.color = '#333';
+                });
+                updateDonationUI();
+            });
+
+            // Show donation section when cart has items (called in renderCart)
+            function showDonationSection(hasItems) {
+                if (donationSection) {
+                    donationSection.style.display = hasItems ? 'block' : 'none';
+                }
+            }
+
+            // Load saved donation from localStorage
+            const savedDonation = JSON.parse(localStorage.getItem('destifo_cart_donation') || 'null');
+            if (savedDonation) {
+                selectedDonationAmount = savedDonation.amount;
+                selectedDonationOrg = savedDonation.organization;
+                donationOrgSelect.value = savedDonation.organization;
+                // Highlight matching button if exists
+                donationAmountBtns.forEach(btn => {
+                    if (parseInt(btn.dataset.amount) === savedDonation.amount) {
+                        btn.style.background = '#4caf50';
+                        btn.style.color = 'white';
+                    }
+                });
+                if (!Array.from(donationAmountBtns).find(b => parseInt(b.dataset.amount) === savedDonation.amount)) {
+                    customDonationInput.value = savedDonation.amount;
+                }
+            }
+
+            // Patch renderCart to show/hide donation section
+            const originalRenderCart = renderCart;
+            renderCart = async function () {
+                await originalRenderCart();
+                // Check if cart has items
+                const items = window.CartAPI ? await window.CartAPI.getItems() : Cart.getItems();
+                showDonationSection(items.length > 0);
+                updateDonationUI();
             };
 
             renderCart();

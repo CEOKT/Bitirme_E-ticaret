@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart Save Test</title>
+</head>
+<body>
+    <h2>Cart Save Button Test</h2>
+    <button id="testBtn">Test Console Log</button>
+    <div id="output"></div>
+    
+    <script>
+        // Test if console works
+        console.log('✓ Page loaded');
+        
+        const btn = document.getElementById('testBtn');
+        const output = document.getElementById('output');
+        
+        btn.onclick = () => {
+            console.log('✓ Button clicked');
+            output.innerHTML = 'Button works! Check console.';
+        };
+        
+        // Test async function
+        async function testAsync() {
+            console.log('✓ Async function started');
+            try {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                console.log('✓ Async completed');
+            } catch(e) {
+                console.error('✗ Async error:', e);
+            }
+        }
+        
+        testAsync();
+    </script>
+</body>
+</html>

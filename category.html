@@ -348,40 +348,45 @@
 
 <body>
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <a href="index.html" style="display: flex; align-items: center; color: inherit; text-decoration: none;">
-                    <i class="fa-solid fa-heart logo-icon"></i>
-                    <span class="logo-text">Destifo</span>
-                </a>
-            </div>
+    <!-- Fixed Header Wrapper -->
+    <div class="fixed-header-wrapper">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                        <img src="images/logo.png" alt="Destifo Logo" style="height: 40px; margin-right: 8px;">
+                        <span class="logo-text">Destifo</span>
+                    </a>
+                </div>
 
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Ürün, kategori veya marka ara...">
-                <button type="submit" onclick="performSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Ürün, kategori veya marka ara...">
+                    <button type="submit" onclick="performSearch()"><i
+                            class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
 
-            <div class="header-actions">
-                <a href="account.html" class="action-item">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Hesabım</span>
-                </a>
-                <a href="favorites.html" class="action-item">
-                    <i class="fa-solid fa-heart"></i>
-                    <span>Favorilerim</span>
-                </a>
-                <a href="cart.html" class="action-item">
-                    <div class="cart-icon-wrapper">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span class="cart-count">0</span>
-                    </div>
-                    <span>Sepetim</span>
-                </a>
+                <div class="header-actions">
+                    <a href="account.html" class="action-item">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Hesabım</span>
+                    </a>
+                    <a href="favorites.html" class="action-item">
+                        <i class="fa-solid fa-heart"></i>
+                        <span>Favorilerim</span>
+                    </a>
+                    <a href="cart.html" class="action-item">
+                        <div class="cart-icon-wrapper">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                        <span>Sepetim</span>
+                    </a>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
+    </div>
 
     <!-- Breadcrumbs -->
     <div class="breadcrumbs container">
@@ -534,7 +539,10 @@
             grid.style.display = 'grid';
             emptyState.style.display = 'none';
 
-            grid.innerHTML = products.map(p => `
+            grid.innerHTML = products.map(p => {
+                const hasStock = p.stock && p.stock > 0;
+
+                return `
                 <div class="product-card">
                     <button class="favorite-btn" onclick="toggleFavorite(${p.id}, this)">
                         <i class="fa-regular fa-heart"></i>
@@ -542,6 +550,7 @@
                     <a href="product.html?id=${p.id}">
                         <div class="product-image">
                             <img src="${p.image}" alt="${p.name}">
+                            ${!hasStock ? '<div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Tükendi</div>' : ''}
                         </div>
                         <div class="product-info">
                             <div class="product-brand">${p.brand}</div>
@@ -553,11 +562,17 @@
                             ${p.oldPrice ? `<div class="product-old-price">${formatPrice(p.oldPrice)}</div>` : ''}
                         </div>
                     </a>
-                    <button class="add-cart-btn" onclick="addToCart(${p.id}, this)">
-                        <i class="fa-solid fa-cart-plus"></i> Sepete Ekle
-                    </button>
+                    ${hasStock ? `
+                        <button class="add-cart-btn" onclick="addToCart(${p.id}, this)">
+                            <i class="fa-solid fa-cart-plus"></i> Sepete Ekle
+                        </button>
+                    ` : `
+                        <button class="add-cart-btn" disabled style="background: #e0e0e0; color: #999; cursor: not-allowed;">
+                            <i class="fa-solid fa-ban"></i> Stokta Yok
+                        </button>
+                    `}
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Sort products

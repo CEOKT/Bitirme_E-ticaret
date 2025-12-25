@@ -280,6 +280,13 @@
             document.getElementById('modalTitle').textContent = 'Yeni Ürün Ekle';
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
+
+            // Clear variant data
+            document.getElementById('variant-options-container').innerHTML = '';
+            document.getElementById('variants-table-body').innerHTML = '';
+            document.getElementById('variants-table-container').style.display = 'none';
+            generatedVariants = [];
+
             document.getElementById('productModal').classList.add('active');
         }
 
@@ -302,7 +309,69 @@
             document.getElementById('donationPercent').value = product.donation_percent;
             document.getElementById('donationOrg').value = product.donation_org;
 
-            // TODO: Load existing SKU variants into the editor table if needed
+            // Clear previous variant data
+            document.getElementById('variant-options-container').innerHTML = '';
+            document.getElementById('variants-table-body').innerHTML = '';
+            document.getElementById('variants-table-container').style.display = 'none';
+            generatedVariants = [];
+
+            // Load existing SKU variants if available
+            if (product.variants && product.variants.length > 0) {
+                // Extract unique attribute keys and values from existing variants
+                const attributeMap = {};
+                product.variants.forEach(v => {
+                    Object.entries(v.attributes).forEach(([key, value]) => {
+                        if (!attributeMap[key]) {
+                            attributeMap[key] = new Set();
+                        }
+                        attributeMap[key].add(value);
+                    });
+                });
+
+                // Create option rows for each attribute
+                const container = document.getElementById('variant-options-container');
+                Object.entries(attributeMap).forEach(([key, values]) => {
+                    const row = document.createElement('div');
+                    row.className = 'variant-option-row';
+                    row.style.cssText = 'display:flex; gap:10px; margin-bottom:10px; align-items:center;';
+                    row.innerHTML = `
+                        <input type="text" placeholder="Özellik Adı (örn: Renk)" class="option-name" value="${key}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="text" placeholder="Değerler (virgülle ayırın)" class="option-values" value="${[...values].join(', ')}" style="flex:2; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <button type="button" onclick="this.parentElement.remove()" style="background:#f44336; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    `;
+                    container.appendChild(row);
+                });
+
+                // Load existing variants into the table
+                generatedVariants = product.variants.map(v => ({
+                    attributes: v.attributes,
+                    label: Object.values(v.attributes).join(' - '),
+                    price: v.price,
+                    stock: v.stock,
+                    sku: v.sku || ''
+                }));
+
+                // Render the variants table
+                const tbody = document.getElementById('variants-table-body');
+                tbody.innerHTML = generatedVariants.map((v, idx) => `
+                    <tr data-index="${idx}">
+                        <td style="padding:10px; border:1px solid #ddd;">${v.label}</td>
+                        <td style="padding:10px; border:1px solid #ddd;">
+                            <input type="number" class="variant-price" value="${v.price}" style="width:100%; padding:5px; border:1px solid #ddd; border-radius:4px;">
+                        </td>
+                        <td style="padding:10px; border:1px solid #ddd;">
+                            <input type="number" class="variant-stock" value="${v.stock}" style="width:100%; padding:5px; border:1px solid #ddd; border-radius:4px;">
+                        </td>
+                        <td style="padding:10px; border:1px solid #ddd;">
+                            <input type="text" class="variant-sku" placeholder="Otomatik" value="${v.sku}" style="width:100%; padding:5px; border:1px solid #ddd; border-radius:4px;">
+                        </td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('variants-table-container').style.display = 'block';
+            }
 
             document.getElementById('productModal').classList.add('active');
         }

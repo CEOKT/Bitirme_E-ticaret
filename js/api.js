@@ -41,12 +41,12 @@ const CartAPI = {
         return response.json();
     },
 
-    async addItem(productId, quantity = 1, selectedColor = null, selectedSize = null, selectedMemory = null) {
+    async addItem(productId, quantity = 1, selectedColor = null, selectedSize = null, selectedMemory = null, selectedAttributes = null) {
         const sessionId = SessionManager.get();
         const response = await fetch(`${API_BASE}/cart`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, productId, quantity, selectedColor, selectedSize, selectedMemory })
+            body: JSON.stringify({ sessionId, productId, quantity, selectedColor, selectedSize, selectedMemory, selectedAttributes })
         });
         const result = await response.json();
         this.updateCartCount();
@@ -67,6 +67,15 @@ const CartAPI = {
     async removeItem(productId) {
         const sessionId = SessionManager.get();
         const response = await fetch(`${API_BASE}/cart/${sessionId}/${productId}`, {
+            method: 'DELETE'
+        });
+        this.updateCartCount();
+        return response.json();
+    },
+
+    async removeItemById(cartItemId) {
+        const sessionId = SessionManager.get();
+        const response = await fetch(`${API_BASE}/cart/${sessionId}/item/${cartItemId}`, {
             method: 'DELETE'
         });
         this.updateCartCount();

@@ -24,11 +24,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Render basic product info
         renderProductInfo(product);
 
-        // Initialize variant system
+        // Setup cart buttons FIRST (clones the buttons)
+        setupCartButtons(product);
+
+        // Initialize variant system AFTER buttons are set up
         initializeVariantSystem(product);
 
-        // Setup cart buttons
-        setupCartButtons(product);
+        // Initialize product tabs (Özellikler, Bağış, Değerlendirmeler)
+        initializeProductTabs(product);
 
     } catch (error) {
         console.error('Ürün yükleme hatası:', error);
@@ -249,6 +252,17 @@ function initializeVariantSystem(product) {
                         if (addToCartBtn) addToCartBtn.dataset.variantId = selectedVariant.id;
                         if (buyNowBtn) buyNowBtn.dataset.variantId = selectedVariant.id;
 
+                        // Store variant info for cart submission
+                        window.selectedVariantInfo = {
+                            variantId: selectedVariant.id,
+                            sku: selectedVariant.sku,
+                            attributes: selectedVariant.attributes,
+                            // Map common attribute names for cart API
+                            color: selectedAttributes['Renk'] || selectedAttributes['renk'] || selectedAttributes['Color'] || null,
+                            size: selectedAttributes['Beden'] || selectedAttributes['beden'] || selectedAttributes['Size'] || null,
+                            memory: selectedAttributes['Hafıza'] || selectedAttributes['hafıza'] || selectedAttributes['Memory'] || null
+                        };
+
                         // Update image if variant has custom image
                         if (selectedVariant.image) {
                             const mainImg = document.getElementById('product-image-main');
@@ -297,13 +311,15 @@ function updateStockDisplay(stock, stockStatus, addToCartBtn, buyNowBtn) {
 function disableCartButtons(addToCartBtn, buyNowBtn) {
     if (addToCartBtn) {
         addToCartBtn.disabled = true;
-        addToCartBtn.style.opacity = '0.5';
+        addToCartBtn.style.opacity = '0.6';
         addToCartBtn.style.cursor = 'not-allowed';
+        addToCartBtn.innerHTML = '<i class="fa-solid fa-ban"></i> STOKTA YOK';
     }
     if (buyNowBtn) {
         buyNowBtn.disabled = true;
-        buyNowBtn.style.opacity = '0.5';
+        buyNowBtn.style.opacity = '0.6';
         buyNowBtn.style.cursor = 'not-allowed';
+        buyNowBtn.innerHTML = '<i class="fa-solid fa-ban"></i> TÜKENDİ';
     }
 }
 
@@ -315,11 +331,13 @@ function enableCartButtons(addToCartBtn, buyNowBtn) {
         addToCartBtn.disabled = false;
         addToCartBtn.style.opacity = '1';
         addToCartBtn.style.cursor = 'pointer';
+        addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> SEPETE EKLE';
     }
     if (buyNowBtn) {
         buyNowBtn.disabled = false;
         buyNowBtn.style.opacity = '1';
         buyNowBtn.style.cursor = 'pointer';
+        buyNowBtn.innerHTML = '<i class="fa-solid fa-heart"></i> HEMEN AL VE DESTEK OL';
     }
 }
 
@@ -338,12 +356,21 @@ function setupCartButtons(product) {
         newBtn.addEventListener('click', async () => {
             if (newBtn.disabled) return;
 
+            // Get selected variant info from window for variant products
             const variantId = newBtn.dataset.variantId;
+            const variantInfo = window.selectedVariantInfo || {};
 
             try {
-                // Add to cart via API
+                // Add to cart via API with variant info
                 if (window.CartAPI) {
-                    await CartAPI.addItem(product.id, 1, null, null, null);
+                    await CartAPI.addItem(
+                        product.id,
+                        1,
+                        variantInfo.color || null,
+                        variantInfo.size || null,
+                        variantInfo.memory || null,
+                        variantInfo.attributes || null  // Send full attributes object
+                    );
                 }
 
                 // Visual feedback
@@ -369,9 +396,18 @@ function setupCartButtons(product) {
         newBuyBtn.addEventListener('click', async () => {
             if (newBuyBtn.disabled) return;
 
+            const variantInfo = window.selectedVariantInfo || {};
+
             try {
                 if (window.CartAPI) {
-                    await CartAPI.addItem(product.id, 1, null, null, null);
+                    await CartAPI.addItem(
+                        product.id,
+                        1,
+                        variantInfo.color || null,
+                        variantInfo.size || null,
+                        variantInfo.memory || null,
+                        variantInfo.attributes || null  // Send full attributes object
+                    );
                 }
                 window.location.href = 'cart.html';
             } catch (error) {
@@ -380,4 +416,110 @@ function setupCartButtons(product) {
             }
         });
     }
+}
+
+/**
+ * Initialize product tabs functionality
+ */
+function initializeProductTabs(product) {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Setup tab switching
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.dataset.tab;
+
+            // Update active button
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Show corresponding content
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            const targetContent = document.getElementById(`tab-${tabName}`);
+            if (targetContent) {
+                targetContent.style.display = 'block';
+            }
+        });
+    });
+
+    // Update review count
+    const reviewCount = product.reviews ? product.reviews.length : 0;
+    const reviewCountEl = document.getElementById('review-count');
+    const reviewCount2El = document.getElementById('review-count-2');
+    if (reviewCountEl) reviewCountEl.textContent = reviewCount;
+    if (reviewCount2El) reviewCount2El.textContent = reviewCount;
+
+    // Update donation info
+    const donationPercent = product.donationPercent || product.donation_percent || 15;
+    const donationAmount = (product.price * donationPercent / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    const donationOrg = product.donationOrg || product.donation_org || 'LÖSEV';
+
+    // Update donation tab
+    const donationOrgName = document.querySelector('#tab-donation .impact-info h4');
+    if (donationOrgName) donationOrgName.textContent = donationOrg;
+
+    const donationPercentEl = document.querySelector('#tab-donation .stat-number');
+    if (donationPercentEl) donationPercentEl.textContent = `%${donationPercent}`;
+
+    const donationAmountEl = document.getElementById('donation-amount');
+    if (donationAmountEl) donationAmountEl.textContent = `${donationAmount} TL`;
+
+    // Render reviews dynamically
+    renderReviews(product.reviews || []);
+}
+
+/**
+ * Render reviews list
+ */
+function renderReviews(reviews) {
+    const reviewsList = document.querySelector('.reviews-list');
+    if (!reviewsList || reviews.length === 0) return;
+
+    reviewsList.innerHTML = reviews.map(review => `
+        <div class="review-item">
+            <div class="review-header">
+                <div class="reviewer-avatar">${(review.user_name || review.userName || 'A').charAt(0).toUpperCase()}</div>
+                <div class="reviewer-info">
+                    <span class="reviewer-name">${review.user_name || review.userName || 'Anonim'}</span>
+                    <span class="review-date">${formatDate(review.created_at)}</span>
+                </div>
+                <div class="review-stars">
+                    ${renderStars(review.rating || 5)}
+                </div>
+            </div>
+            <p class="review-text">${review.comment || ''}</p>
+            <div class="review-helpful">
+                <button><i class="fa-solid fa-thumbs-up"></i> Faydalı (${review.helpful_count || 0})</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Render star rating
+ */
+function renderStars(rating) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            html += '<i class="fa-solid fa-star"></i>';
+        } else if (i - 0.5 <= rating) {
+            html += '<i class="fa-solid fa-star-half-alt"></i>';
+        } else {
+            html += '<i class="fa-regular fa-star"></i>';
+        }
+    }
+    return html;
+}
+
+/**
+ * Format date to Turkish locale
+ */
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }

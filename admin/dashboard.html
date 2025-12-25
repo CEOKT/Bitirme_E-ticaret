@@ -61,6 +61,29 @@
             </header>
 
             <div class="admin-content">
+                <!-- User Search Section -->
+                <div class="admin-table-container" style="margin-bottom: 20px;">
+                    <div class="table-header">
+                        <h2><i class="fa-solid fa-search"></i> Kullanıcı Ara</h2>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="userSearchInput" placeholder="Kullanıcı adı veya e-posta..."
+                                style="flex: 1; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                            <button onclick="searchUser()" class="action-btn edit" style="padding: 12px 24px;">
+                                <i class="fa-solid fa-search"></i> Ara
+                            </button>
+                            <button onclick="clearSearch()" class="action-btn"
+                                style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                <i class="fa-solid fa-times"></i> Temizle
+                            </button>
+                        </div>
+                        <div id="userSearchResults" style="display: none;">
+                            <!-- Search results will appear here -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -132,8 +155,61 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Navigation Categories Management -->
+                <div class="admin-table-container" style="margin-top: 20px;">
+                    <div class="table-header">
+                        <h2><i class="fa-solid fa-bars"></i> Navigasyon Kategorileri</h2>
+                        <p style="font-size: 13px; color: #888; margin-top: 5px;">Üst menüde görünecek kategorileri
+                            seçin, düzenleyin veya silin</p>
+                    </div>
+                    <div id="navCategoriesContainer" style="padding: 20px;">
+                        <!-- Categories will be loaded here -->
+                    </div>
+                    <div style="padding: 0 20px 20px;">
+                        <button onclick="saveNavCategories()" class="action-btn edit"
+                            style="padding: 12px 24px; font-size: 14px;">
+                            <i class="fa-solid fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
+    </div>
+
+    <!-- Category Products Modal -->
+    <div id="categoryProductsModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: white; border-radius: 16px; width: 90%; max-width: 800px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div
+                style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="modalCategoryTitle" style="margin: 0;"><i class="fa-solid fa-box"></i> Kategorideki Ürünler</h3>
+                <button onclick="closeCategoryModal()"
+                    style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                <div id="categoryProductsList">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+            <div style="padding: 15px 20px; border-top: 1px solid #eee; background: #f8f9fa;">
+                <p style="margin: 0 0 10px; color: #666; font-size: 13px;">Tüm ürünleri başka kategoriye taşıyın:</p>
+                <div style="display: flex; gap: 10px;">
+                    <select id="targetCategorySelect"
+                        style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                        <!-- Categories will be loaded here -->
+                    </select>
+                    <button onclick="moveAllProducts()" class="action-btn edit" style="padding: 10px 20px;">
+                        <i class="fa-solid fa-arrows-alt"></i> Tümünü Taşı
+                    </button>
+                    <button onclick="deleteCategory()" class="action-btn delete"
+                        style="padding: 10px 20px; background: #e74c3c;">
+                        <i class="fa-solid fa-trash"></i> Kategoriyi Sil
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -160,6 +236,132 @@
             const d = new Date(dateStr);
             return d.toLocaleDateString('tr-TR');
         }
+
+        // Search user
+        async function searchUser() {
+            const query = document.getElementById('userSearchInput').value.trim();
+            if (!query) {
+                alert('Arama terimi girin!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/users/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                const resultsDiv = document.getElementById('userSearchResults');
+
+                if (!data.users || data.users.length === 0) {
+                    resultsDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Kullanıcı bulunamadı</p>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+
+                resultsDiv.innerHTML = data.users.map(user => `
+                    <div style="background: white; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="margin: 0; color: #1e3a5f;">${user.first_name} ${user.last_name}</h3>
+                                <p style="margin: 5px 0 0; color: #888; font-size: 13px;">${user.email} • ${user.phone || 'Telefon yok'}</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <span style="background: ${user.is_blocked ? '#e74c3c' : '#27ae60'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                                    ${user.is_blocked ? 'Engelli' : 'Aktif'}
+                                </span>
+                                <span style="background: #f0f0f0; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                                    Kayıt: ${formatDate(user.created_at)}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- User Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                            <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 700; color: #1976d2;">${user.stats.totalOrders}</div>
+                                <div style="font-size: 11px; color: #666;">Sipariş</div>
+                            </div>
+                            <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 700; color: #388e3c;">${user.stats.totalSpent.toLocaleString('tr-TR')} ₺</div>
+                                <div style="font-size: 11px; color: #666;">Harcama</div>
+                            </div>
+                            <div style="background: #fff3e0; padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 700; color: #f57c00;">${user.stats.totalDonations.toLocaleString('tr-TR')} ₺</div>
+                                <div style="font-size: 11px; color: #666;">Bağış</div>
+                            </div>
+                            <div style="background: #fce4ec; padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 700; color: #c2185b;">${user.stats.totalFavorites}</div>
+                                <div style="font-size: 11px; color: #666;">Favori</div>
+                            </div>
+                        </div>
+
+                        <!-- Orders -->
+                        ${user.orders.length > 0 ? `
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="margin: 0 0 10px; font-size: 14px; color: #1e3a5f;"><i class="fa-solid fa-shopping-cart"></i> Siparişler</h4>
+                            <div style="max-height: 150px; overflow-y: auto;">
+                                ${user.orders.map(o => `
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 5px; font-size: 13px;">
+                                        <span>#${o.id} - ${o.status}</span>
+                                        <span>${o.total_amount} TL - ${formatDate(o.created_at)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Donations -->
+                        ${user.donations.length > 0 ? `
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="margin: 0 0 10px; font-size: 14px; color: #e67e22;"><i class="fa-solid fa-hand-holding-heart"></i> Bağışlar</h4>
+                            <div style="max-height: 150px; overflow-y: auto;">
+                                ${user.donations.map(d => `
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #fff8e1; border-radius: 6px; margin-bottom: 5px; font-size: 13px;">
+                                        <span>${d.ngo_name || 'STK'}</span>
+                                        <span>${d.amount} TL - ${formatDate(d.created_at)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Favorites -->
+                        ${user.favorites.length > 0 ? `
+                        <div>
+                            <h4 style="margin: 0 0 10px; font-size: 14px; color: #e74c3c;"><i class="fa-solid fa-heart"></i> Favoriler</h4>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${user.favorites.slice(0, 6).map(f => `
+                                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fce4ec; border-radius: 6px; font-size: 12px;">
+                                        <img src="${f.image}" style="width: 24px; height: 24px; object-fit: cover; border-radius: 4px;">
+                                        <span>${f.product_name.substring(0, 20)}...</span>
+                                    </div>
+                                `).join('')}
+                                ${user.favorites.length > 6 ? `<span style="color: #888; font-size: 12px;">+${user.favorites.length - 6} daha</span>` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                resultsDiv.style.display = 'block';
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Arama sırasında hata oluştu!');
+            }
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('userSearchInput').value = '';
+            document.getElementById('userSearchResults').style.display = 'none';
+            document.getElementById('userSearchResults').innerHTML = '';
+        }
+
+        // Enter key search
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('userSearchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchUser();
+            });
+        });
 
         // Load dashboard data
         async function loadDashboard() {
@@ -201,9 +403,244 @@
                 } else {
                     lowStockBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:30px;">Düşük stoklu ürün yok</td></tr>';
                 }
+
+                // Load nav categories
+                await loadNavCategories();
             } catch (error) {
                 console.error('Dashboard error:', error);
             }
+        }
+
+        // Available icons for categories
+        const availableIcons = [
+            { icon: 'fa-venus', label: 'Kadın' },
+            { icon: 'fa-mars', label: 'Erkek' },
+            { icon: 'fa-child', label: 'Çocuk' },
+            { icon: 'fa-spray-can-sparkles', label: 'Kozmetik' },
+            { icon: 'fa-home', label: 'Ev' },
+            { icon: 'fa-laptop', label: 'Laptop' },
+            { icon: 'fa-mobile', label: 'Telefon' },
+            { icon: 'fa-shirt', label: 'Giyim' },
+            { icon: 'fa-shoe-prints', label: 'Ayakkabı' },
+            { icon: 'fa-bag-shopping', label: 'Çanta' },
+            { icon: 'fa-gem', label: 'Mücevher' },
+            { icon: 'fa-gamepad', label: 'Oyun' },
+            { icon: 'fa-book', label: 'Kitap' },
+            { icon: 'fa-utensils', label: 'Yemek' },
+            { icon: 'fa-dumbbell', label: 'Spor' },
+            { icon: 'fa-car', label: 'Araba' },
+            { icon: 'fa-paw', label: 'Evcil' },
+            { icon: 'fa-couch', label: 'Mobilya' },
+            { icon: 'fa-tv', label: 'TV' },
+            { icon: 'fa-headphones', label: 'Kulaklık' },
+            { icon: 'fa-camera', label: 'Kamera' },
+            { icon: 'fa-gift', label: 'Hediye' },
+            { icon: 'fa-folder', label: 'Klasör' }
+        ];
+
+        // Load navigation categories
+        async function loadNavCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+                const categories = await response.json();
+
+                // Get saved nav settings from localStorage
+                const savedNavCats = JSON.parse(localStorage.getItem('destifo_nav_categories') || '["kadin","erkek","cocuk","kozmetik","ev-yasam","elektronik"]');
+                const savedNavCustom = JSON.parse(localStorage.getItem('destifo_nav_custom') || '{}');
+
+                const iconOptions = availableIcons.map(i => `<option value="${i.icon}">${i.label}</option>`).join('');
+
+                const container = document.getElementById('navCategoriesContainer');
+                container.innerHTML = categories.map(cat => {
+                    const customName = savedNavCustom[cat.slug]?.name || cat.name;
+                    const customIcon = savedNavCustom[cat.slug]?.icon || '';
+
+                    return `
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 12px;" data-category-id="${cat.id}">
+                        <input type="checkbox" name="navCategory" value="${cat.slug}" data-cat-id="${cat.id}" ${savedNavCats.includes(cat.slug) ? 'checked' : ''} 
+                            style="width: 20px; height: 20px; accent-color: var(--primary-color); flex-shrink: 0;">
+                        
+                        <select name="navIcon_${cat.slug}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; min-width: 120px;">
+                            <option value="">Varsayılan İkon</option>
+                            ${availableIcons.map(i => `<option value="${i.icon}" ${customIcon === i.icon ? 'selected' : ''}>${i.label}</option>`).join('')}
+                        </select>
+                        
+                        <input type="text" name="navName_${cat.slug}" value="${customName}" placeholder="Kategori Adı"
+                            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        
+                        <span style="color: #888; font-size: 12px; min-width: 80px;">${cat.slug}</span>
+                        
+                        <button onclick="openCategoryModal(${cat.id}, '${cat.name}')" class="action-btn delete" 
+                            style="padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            <i class="fa-solid fa-trash"></i> Sil
+                        </button>
+                    </div>
+                `}).join('');
+
+                // Store categories globally for modal
+                window.allCategories = categories;
+            } catch (error) {
+                console.error('Nav categories error:', error);
+            }
+        }
+
+        // Current category being edited
+        let currentCategoryId = null;
+        let currentCategoryName = '';
+
+        // Open category modal
+        async function openCategoryModal(categoryId, categoryName) {
+            currentCategoryId = categoryId;
+            currentCategoryName = categoryName;
+
+            document.getElementById('modalCategoryTitle').innerHTML = `<i class="fa-solid fa-box"></i> ${categoryName} Kategorisindeki Ürünler`;
+
+            // Load products in this category
+            try {
+                const response = await fetch(`${API_BASE}/admin/categories/${categoryId}/products`);
+                const products = await response.json();
+
+                const productsList = document.getElementById('categoryProductsList');
+
+                if (products.length === 0) {
+                    productsList.innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">Bu kategoride ürün yok. Kategoriyi doğrudan silebilirsiniz.</p>';
+                } else {
+                    productsList.innerHTML = products.map(p => `
+                        <div style="display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px;">
+                            <img src="${p.image}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                            <div style="flex: 1;">
+                                <strong>${p.name}</strong>
+                                <div style="font-size: 12px; color: #888;">${p.price} TL</div>
+                            </div>
+                            <select onchange="updateProductCategory(${p.id}, this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                ${window.allCategories.map(c => `<option value="${c.id}" ${c.id === p.main_category_id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    `).join('');
+                }
+
+                // Load target category select
+                const targetSelect = document.getElementById('targetCategorySelect');
+                targetSelect.innerHTML = window.allCategories
+                    .filter(c => c.id !== categoryId)
+                    .map(c => `<option value="${c.id}">${c.name}</option>`)
+                    .join('');
+
+                // Show modal
+                document.getElementById('categoryProductsModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading products:', error);
+                alert('Ürünler yüklenirken hata oluştu!');
+            }
+        }
+
+        // Close modal
+        function closeCategoryModal() {
+            document.getElementById('categoryProductsModal').style.display = 'none';
+            currentCategoryId = null;
+        }
+
+        // Update single product category
+        async function updateProductCategory(productId, newCategoryId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/products/${productId}/category`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ main_category_id: parseInt(newCategoryId), sub_category_id: null })
+                });
+
+                if (response.ok) {
+                    // Refresh the modal
+                    openCategoryModal(currentCategoryId, currentCategoryName);
+                }
+            } catch (error) {
+                console.error('Error updating product:', error);
+            }
+        }
+
+        // Move all products to another category
+        async function moveAllProducts() {
+            const targetCategoryId = document.getElementById('targetCategorySelect').value;
+            if (!targetCategoryId) {
+                alert('Hedef kategori seçin!');
+                return;
+            }
+
+            if (!confirm('Tüm ürünler seçilen kategoriye taşınacak. Emin misiniz?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/categories/${currentCategoryId}/products`);
+                const products = await response.json();
+
+                for (const product of products) {
+                    await fetch(`${API_BASE}/admin/products/${product.id}/category`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ main_category_id: parseInt(targetCategoryId), sub_category_id: null })
+                    });
+                }
+
+                alert('Tüm ürünler taşındı!');
+                openCategoryModal(currentCategoryId, currentCategoryName);
+            } catch (error) {
+                console.error('Error moving products:', error);
+                alert('Hata oluştu!');
+            }
+        }
+
+        // Delete category
+        async function deleteCategory() {
+            if (!confirm(`"${currentCategoryName}" kategorisini silmek istediğinize emin misiniz?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/categories/${currentCategoryId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    alert(result.message || result.error);
+                    return;
+                }
+
+                alert('Kategori silindi!');
+                closeCategoryModal();
+                loadNavCategories();
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                alert('Hata oluştu!');
+            }
+        }
+
+        // Save navigation categories
+        function saveNavCategories() {
+            const checkboxes = document.querySelectorAll('input[name="navCategory"]:checked');
+            const selectedSlugs = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedSlugs.length === 0) {
+                alert('En az bir kategori seçmelisiniz!');
+                return;
+            }
+
+            // Collect custom names and icons
+            const customSettings = {};
+            document.querySelectorAll('input[name="navCategory"]').forEach(cb => {
+                const slug = cb.value;
+                const nameInput = document.querySelector(`input[name="navName_${slug}"]`);
+                const iconSelect = document.querySelector(`select[name="navIcon_${slug}"]`);
+
+                if (nameInput || iconSelect) {
+                    customSettings[slug] = {
+                        name: nameInput?.value || '',
+                        icon: iconSelect?.value || ''
+                    };
+                }
+            });
+
+            localStorage.setItem('destifo_nav_categories', JSON.stringify(selectedSlugs));
+            localStorage.setItem('destifo_nav_custom', JSON.stringify(customSettings));
+            alert('Navigasyon kategorileri kaydedildi! Ana sayfayı yenileyince değişiklikler görünecek.');
         }
 
         document.addEventListener('DOMContentLoaded', loadDashboard);
