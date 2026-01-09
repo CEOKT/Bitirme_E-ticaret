@@ -23,7 +23,11 @@ async function loadCharityProducts(containerId = 'charityGrid') {
         if (!response.ok) throw new Error('Products fetch failed');
 
         const products = await response.json();
-        const displayProducts = products.slice(0, 24); // Limit to 24
+
+        // FILTER: Only show charity products (100% donation - Trendyol pet food)
+        const charityProducts = products.filter(p => p.donation_percent === 100);
+
+        const displayProducts = charityProducts.slice(0, 24); // Limit to 24
         globalCharityProducts = displayProducts;
 
         if (loadingMain) loadingMain.style.display = 'none';
