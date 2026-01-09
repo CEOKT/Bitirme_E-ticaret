@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 stkId: urlParams.get('stkId'),
                 stkName: urlParams.get('stkName'),
                 targetAmount: parseFloat(urlParams.get('targetAmount')) || 0,
-                price: 50 // Default donation amount, user can change
+                price: parseFloat(urlParams.get('price')) || 50 // Default from URL or 50
             };
             donationAmount = donationInfo.price;
             donationTitle = donationInfo.campaignTitle;
@@ -1102,6 +1102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     name: `Bağış: ${org}`,
                     category: 'Donation',
                     isDonation: true,
+                    campaignId: donationInfo.campaignId, // Pass campaign ID for backend update
                     itemType: 'VIRTUAL',
                     price: totalPrice.toFixed(2),
                     quantity: 1

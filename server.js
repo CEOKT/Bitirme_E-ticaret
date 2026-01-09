@@ -3100,6 +3100,15 @@ app.post('/api/payment/checkout', authenticateToken, async (req, res) => {
                     for (const item of basketItems) {
                         // Skip stock update for donation items
                         if (item.category === 'Donation' || item.isDonation) {
+                            // Update Campaign Progress if applicable
+                            if (item.campaignId) {
+                                try {
+                                    db.prepare('UPDATE campaigns SET current_amount = current_amount + ? WHERE id = ?').run(parseFloat(item.price), item.campaignId);
+                                    console.log(`Campaign ${item.campaignId} updated: +${item.price} TL`);
+                                } catch (campErr) {
+                                    console.error('Error updating campaign amount:', campErr);
+                                }
+                            }
                             continue;
                         }
 
