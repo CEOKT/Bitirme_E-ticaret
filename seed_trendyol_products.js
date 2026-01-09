@@ -88,8 +88,13 @@ function parsePrice(priceStr) {
     return parseFloat(clean) || 0;
 }
 
-// Find or Create "Pet Ürünleri" Category
-let mainCat = db.prepare("SELECT id FROM main_categories WHERE slug = 'ev-yasam'").get();
+// Find or Create "Bağış Kampanyası" Category
+let mainCat = db.prepare("SELECT id FROM main_categories WHERE slug = 'bagis-kampanyasi'").get();
+if (!mainCat) {
+    // Fallback creates it if database.js didn't
+    const res = db.prepare("INSERT INTO main_categories (name, slug, icon, description, sort_order) VALUES (?, ?, ?, ?, ?)").run('Bağış Kampanyası', 'bagis-kampanyasi', 'fa-hand-holding-heart', 'İyilik Ürünleri', 99);
+    mainCat = { id: res.lastInsertRowid };
+}
 let subCat = db.prepare("SELECT id FROM sub_categories WHERE slug = 'mutfak' OR slug = 'ev-tekstili'").get(); // Fallback subcat
 
 // Find Animal STK
