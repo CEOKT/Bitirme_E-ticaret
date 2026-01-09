@@ -25,7 +25,12 @@ async function loadCharityProducts(containerId = 'charityGrid') {
         const products = await response.json();
 
         // FILTER: Only show charity products (100% donation - Trendyol pet food)
-        const charityProducts = products.filter(p => p.donation_percent === 100);
+        // Check both snake_case and camelCase since API might use either
+        const charityProducts = products.filter(p =>
+            (p.donation_percent === 100) || (p.donationPercent === 100)
+        );
+
+        console.log(`🔍 Total products: ${products.length}, Charity products: ${charityProducts.length}`);
 
         const displayProducts = charityProducts.slice(0, 24); // Limit to 24
         globalCharityProducts = displayProducts;
