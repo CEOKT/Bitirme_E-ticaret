@@ -231,16 +231,17 @@
                         style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--secondary-color), #f39c12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 25px rgba(230, 126, 34, 0.35);">
                         <i class="fa-solid fa-heart" style="font-size: 36px; color: white;"></i>
                     </div>
-                    <h3 style="font-size: 24px; color: var(--primary-color); margin-bottom: 10px;">Doğrudan Bağış Yap
+                    <h3 style="font-size: 24px; color: var(--primary-color); margin-bottom: 10px;">İyilik Yap, İyiliği
+                        Arttır
                     </h3>
-                    <p style="color: #666; font-size: 15px;">Desteklemek istediğiniz kuruluşu seçin ve bağış miktarını
+                    <p style="color: #666; font-size: 15px;">Desteklemek istediğiniz kuruluşu seçin ve miktarı
                         belirleyin</p>
                 </div>
 
                 <div style="display: grid; gap: 20px;">
                     <!-- Organization Selection -->
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Bağış
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">İyilik
                             Yapılacak Kuruluş</label>
                         <select id="donationOrg"
                             style="width: 100%; padding: 14px 16px; border: 2px solid #e8e8e8; border-radius: 12px; font-size: 15px; background: white; cursor: pointer;">
@@ -257,7 +258,7 @@
 
                     <!-- Amount Selection -->
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Bağış
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">İyilik
                             Miktarı</label>
                         <div class="amount-buttons"
                             style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -281,12 +282,12 @@
                     <!-- Donate Button -->
                     <button type="button" onclick="proceedToDonate()"
                         style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--secondary-color), #f39c12); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 25px rgba(230, 126, 34, 0.35);">
-                        <i class="fa-solid fa-heart"></i> Bağışa Devam Et
+                        <i class="fa-solid fa-heart"></i> İyiliğe Devam Et
                     </button>
                 </div>
 
                 <p style="text-align: center; margin-top: 20px; font-size: 13px; color: #888;">
-                    <i class="fa-solid fa-shield-halved"></i> Tüm bağışlar güvenli ödeme altyapısı ile gerçekleştirilir
+                    <i class="fa-solid fa-shield-halved"></i> Tüm işlemler güvenli ödeme altyapısı ile gerçekleştirilir
                 </p>
             </div>
         </div>
@@ -408,8 +409,30 @@
             window.location.href = 'payment.html?donation=true';
         }
 
+        // Load approved STKs for donation dropdown
+        async function loadSTKs() {
+            try {
+                const response = await fetch(`${API_BASE}/stks`);
+                const stks = await response.json();
+
+                const select = document.getElementById('donationOrg');
+                // Keep first option (placeholder)
+                select.innerHTML = '<option value="">Kuruluş Seçin...</option>';
+
+                stks.forEach(stk => {
+                    const option = document.createElement('option');
+                    option.value = stk.organization_name;
+                    option.textContent = stk.organization_name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading STKs:', error);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             await loadCategories();
+            await loadSTKs(); // Load STKs
 
             try {
                 await CartAPI.updateCartCount();

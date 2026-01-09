@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const product = await response.json();
 
+        // Check if this is a campaign product (100% donation)
+        const isCampaignProduct = product.donationPercent === 100 || product.donation_percent === 100;
+        if (isCampaignProduct) {
+            applyCampaignStyling(product);
+        }
+
         // Render basic product info
         renderProductInfo(product);
 
@@ -38,6 +44,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert('Ürün yüklenirken bir hata oluştu.');
     }
 });
+
+/**
+ * Apply special styling for campaign products
+ */
+function applyCampaignStyling(product) {
+    // Add purple gradient background to body
+    document.body.style.background = 'linear-gradient(135deg, #f3e7ff 0%, #e8d4f8 50%, #f0e6f6 100%)';
+    document.body.style.minHeight = '100vh';
+
+    // Add campaign banner after header
+    const breadcrumbs = document.querySelector('.breadcrumbs');
+    if (breadcrumbs) {
+        const campaignBanner = document.createElement('div');
+        campaignBanner.className = 'campaign-product-banner';
+        campaignBanner.innerHTML = `
+            <style>
+                .campaign-product-banner {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 15px 20px;
+                    text-align: center;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                }
+                .campaign-product-banner i {
+                    font-size: 20px;
+                    animation: pulse 1.5s ease-in-out infinite;
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+                .campaign-product-banner .org-name {
+                    background: rgba(255,255,255,0.2);
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                }
+            </style>
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span>Bu bir <strong>Bağış Kampanyası</strong> ürünüdür - Gelirin %100'ü ihtiyaç sahiplerine ulaşır</span>
+            <span class="org-name">${product.donationOrg || product.donation_org || 'STK'}</span>
+        `;
+        breadcrumbs.parentNode.insertBefore(campaignBanner, breadcrumbs.nextSibling);
+    }
+
+    // Style the product section
+    const productSection = document.querySelector('.product-detail-section');
+    if (productSection) {
+        productSection.style.background = 'rgba(255,255,255,0.9)';
+        productSection.style.borderRadius = '20px';
+        productSection.style.padding = '30px';
+        productSection.style.marginTop = '20px';
+        productSection.style.boxShadow = '0 10px 40px rgba(102, 126, 234, 0.15)';
+    }
+
+    // Style the donation box
+    const donationBox = document.querySelector('.donation-box');
+    if (donationBox) {
+        donationBox.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        donationBox.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.4)';
+    }
+
+    // Update page title
+    document.title = `🎗️ Kampanya: ${product.name || product.title} - Destifo`;
+}
 
 /**
  * Render basic product information
@@ -80,21 +156,24 @@ function renderProductInfo(product) {
     // Donation info
     const donationPercent = product.donationPercent || product.donation_percent || 15;
     const donationAmount = (product.price * donationPercent / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-    const donationInfo = document.querySelector('.donation-box p');
+    const donationOrg = product.donationOrg || product.donation_org || 'STK';
+
+    // Select correct element (.box-text inside .donation-box)
+    const donationInfo = document.querySelector('.donation-box .box-text');
     if (donationInfo) {
-        donationInfo.innerHTML = `Bu ürünün <strong>%${donationPercent}</strong>'i ihtiyaç sahiplerine destek olur.`;
+        donationInfo.innerHTML = `Bu ürünün gelirinin <strong>%${donationPercent}'i ${donationOrg}'e</strong> bağışlanacaktır.`;
     }
 
-    // Features
-    if (product.features) {
-        const featuresGrid = document.getElementById('features-grid');
+    // Features - Dynamically load from database
+    if (product.features && Object.keys(product.features).length > 0) {
+        const featuresGrid = document.getElementById('product-features');
         if (featuresGrid) {
             featuresGrid.innerHTML = '';
             for (const [key, value] of Object.entries(product.features)) {
                 const row = document.createElement('div');
                 row.className = 'feature-row';
                 row.innerHTML = `
-                    <span class="feature-label">${key}</span>
+                    <span class="feature-label">${key}:</span>
                     <span class="feature-value">${value}</span>
                 `;
                 featuresGrid.appendChild(row);
@@ -455,11 +534,15 @@ function initializeProductTabs(product) {
     // Update donation info
     const donationPercent = product.donationPercent || product.donation_percent || 15;
     const donationAmount = (product.price * donationPercent / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-    const donationOrg = product.donationOrg || product.donation_org || 'LÖSEV';
+    const donationOrg = product.donationOrg || product.donation_org || 'STK';
 
-    // Update donation tab
+    // Update donation tab - Organization name
     const donationOrgName = document.querySelector('#tab-donation .impact-info h4');
     if (donationOrgName) donationOrgName.textContent = donationOrg;
+
+    // Also update the new ID-based element
+    const donationOrgNameById = document.getElementById('donation-org-name');
+    if (donationOrgNameById) donationOrgNameById.textContent = donationOrg;
 
     const donationPercentEl = document.querySelector('#tab-donation .stat-number');
     if (donationPercentEl) donationPercentEl.textContent = `%${donationPercent}`;
@@ -467,8 +550,70 @@ function initializeProductTabs(product) {
     const donationAmountEl = document.getElementById('donation-amount');
     if (donationAmountEl) donationAmountEl.textContent = `${donationAmount} TL`;
 
+    // Update impact details
+    if (product.impactTitle || product.impactDescription) {
+        const impactDescContainer = document.querySelector('.donation-description');
+        if (impactDescContainer) {
+            let html = '';
+            if (product.impactTitle) {
+                html += `<h4><i class="fa-solid fa-circle-info"></i> ${product.impactTitle}</h4>`;
+            } else {
+                html += `<h4><i class="fa-solid fa-circle-info"></i> Bağışınız Ne İşe Yarıyor?</h4>`;
+            }
+
+            if (product.impactDescription) {
+                // Check if description is a list (contains newlines or bullets)
+                if (product.impactDescription.includes('\n') || product.impactDescription.includes('*')) {
+                    const items = product.impactDescription.split(/\n|\*/).filter(item => item.trim());
+                    html += '<ul class="impact-list">';
+                    items.forEach(item => {
+                        html += `<li><i class="fa-solid fa-check"></i> ${item.trim()}</li>`;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += `<p>${product.impactDescription}</p>`;
+                }
+            }
+            impactDescContainer.innerHTML = html;
+        }
+    }
+
     // Render reviews dynamically
     renderReviews(product.reviews || []);
+
+    // Update Review Stats (Bars)
+    updateReviewStats(product.reviews || []);
+}
+
+function updateReviewStats(reviews) {
+    const total = reviews.length;
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+    // Calculate counts
+    reviews.forEach(r => {
+        const rating = Math.round(r.rating);
+        if (counts[rating] !== undefined) counts[rating]++;
+    });
+
+    // Update Average Rating Display
+    const avgRating = total > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : "0.0";
+    const bigRating = document.querySelector('.rating-big .rating-number');
+    if (bigRating) bigRating.textContent = avgRating;
+
+    const bigStars = document.querySelector('.rating-big .rating-stars');
+    if (bigStars) bigStars.innerHTML = renderStars(Number(avgRating));
+
+    // Update Bars
+    for (let i = 5; i >= 1; i--) {
+        const count = counts[i];
+        const percent = total > 0 ? (count / total * 100) : 0;
+
+        const bar = document.getElementById(`bar-${i}`);
+        const countSpan = document.getElementById(`count-${i}`);
+
+        if (bar) bar.style.width = `${percent}%`;
+        if (countSpan) countSpan.textContent = count;
+    }
 }
 
 /**
@@ -476,7 +621,18 @@ function initializeProductTabs(product) {
  */
 function renderReviews(reviews) {
     const reviewsList = document.querySelector('.reviews-list');
-    if (!reviewsList || reviews.length === 0) return;
+    if (!reviewsList) return;
+
+    if (!reviews || reviews.length === 0) {
+        reviewsList.innerHTML = `
+            <div class="no-reviews" style="text-align: center; padding: 30px; color: #666;">
+                <i class="fa-regular fa-comment-dots" style="font-size: 40px; margin-bottom: 15px; color: #ddd;"></i>
+                <p>Bu ürün için henüz değerlendirme yapılmadı.</p>
+                <p style="font-size: 13px; margin-top: 5px;">İlk değerlendirmeyi siz yapın, iyiliği büyütün!</p>
+            </div>
+        `;
+        return;
+    }
 
     reviewsList.innerHTML = reviews.map(review => `
         <div class="review-item">

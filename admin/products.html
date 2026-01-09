@@ -9,7 +9,110 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/modern-admin.css">
+    <style>
+        /* Modal Layout Fixes */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            /* Ensure spacing on mobile */
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            /* Critical for scrolling */
+            overflow-y: auto;
+            /* Critical for scrolling */
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-form {
+            padding: 25px;
+        }
+
+        /* Button Fixes */
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background: #f1f2f6;
+            color: #636e72;
+        }
+
+        .btn-cancel:hover {
+            background: #dfe4ea;
+        }
+
+        .btn-save {
+            background: #6c5ce7;
+            color: white;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            line-height: 1;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+    </style>
 </head>
 
 <body>
@@ -28,9 +131,17 @@
                     <i class="fa-solid fa-users"></i>
                     <span>Kullanıcılar</span>
                 </a>
+                <a href="stk.html" class="nav-item">
+                    <i class="fa-solid fa-building-ngo"></i>
+                    <span>STK Başvuruları</span>
+                </a>
                 <a href="products.html" class="nav-item active">
                     <i class="fa-solid fa-box"></i>
                     <span>Ürünler</span>
+                </a>
+                <a href="campaign-products.html" class="nav-item">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Kampanya Ürünleri</span>
                 </a>
                 <a href="donations.html" class="nav-item">
                     <i class="fa-solid fa-hand-holding-heart"></i>
@@ -197,7 +308,11 @@
                     </div>
                     <div class="form-group">
                         <label>Bağış Kurumu</label>
-                        <input type="text" id="donationOrg" value="LÖSEV">
+                        <select id="donationOrg" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            <option value="">STK Seçin...</option>
+                            <!-- Populated dynamically -->
+                        </select>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -273,6 +388,27 @@
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
+            }
+        }
+
+        async function loadApprovedSTKs() {
+            try {
+                const response = await fetch(`${API_BASE}/stks`);
+                const stks = await response.json();
+
+                const stkSelect = document.getElementById('donationOrg');
+                // Keep the default placeholder
+                stkSelect.innerHTML = '<option value="">STK Seçin...</option>';
+
+                // Add standard/system STKs if needed (optional, or just fetch from DB)
+                // stkSelect.innerHTML += '<option value="LÖSEV">LÖSEV</option>'; 
+
+                stkSelect.innerHTML += stks.map(stk =>
+                    `<option value="${stk.organization_name}">${stk.organization_name}</option>`
+                ).join('');
+
+            } catch (error) {
+                console.error('Error loading STKs:', error);
             }
         }
 
@@ -439,7 +575,10 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadProducts);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadApprovedSTKs();
+        });
 
         // ===============================
         // SKU Variant Generator Logic

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/modern-admin.css">
 </head>
 
 <body>
@@ -28,9 +28,17 @@
                     <i class="fa-solid fa-users"></i>
                     <span>Kullanıcılar</span>
                 </a>
+                <a href="stk.html" class="nav-item">
+                    <i class="fa-solid fa-building-ngo"></i>
+                    <span>STK Başvuruları</span>
+                </a>
                 <a href="products.html" class="nav-item">
                     <i class="fa-solid fa-box"></i>
                     <span>Ürünler</span>
+                </a>
+                <a href="campaign-products.html" class="nav-item">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Kampanya Ürünleri</span>
                 </a>
                 <a href="donations.html" class="nav-item">
                     <i class="fa-solid fa-hand-holding-heart"></i>
@@ -61,9 +69,21 @@
             </header>
 
             <div class="admin-content">
+                <!-- Filters -->
+                <div class="filter-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="filter-tab active" onclick="filterUsers('user')"
+                        style="padding: 10px 20px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        Standart Kullanıcılar
+                    </button>
+                    <button class="filter-tab" onclick="filterUsers('stk')"
+                        style="padding: 10px 20px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        STK Temsilcileri
+                    </button>
+                </div>
+
                 <div class="admin-table-container">
                     <div class="table-header">
-                        <h2>Tüm Kullanıcılar</h2>
+                        <h2 id="tableTitle">Standart Kullanıcılar</h2>
                     </div>
                     <table class="admin-table">
                         <thead>
@@ -74,10 +94,16 @@
                                 <th>Telefon</th>
                                 <th>Kayıt Tarihi</th>
                                 <th>Durum</th>
+                                <th>Tip</th>
                                 <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody id="usersTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -87,7 +113,10 @@
 
     <script>
         const API_BASE = 'http://localhost:3000/api';
+        let allUsers = [];
+        let currentType = 'user'; // 'user' or 'stk'
 
+        // Auth Check
         if (!localStorage.getItem('admin_token')) {
             window.location.href = 'index.html';
         }
@@ -109,38 +138,101 @@
         async function loadUsers() {
             try {
                 const response = await fetch(`${API_BASE}/admin/users`);
-                const users = await response.json();
+                const data = await response.json();
 
-                const tbody = document.getElementById('usersTable');
-
-                if (users.length > 0) {
-                    tbody.innerHTML = users.map(user => `
-                        <tr>
-                            <td>${user.id}</td>
-                            <td>${user.first_name || ''} ${user.last_name || ''}</td>
-                            <td>${user.email}</td>
-                            <td>${user.phone || '-'}</td>
-                            <td>${formatDate(user.created_at)}</td>
-                            <td>
-                                <span class="status-badge ${user.is_blocked ? 'blocked' : 'active'}">
-                                    ${user.is_blocked ? 'Engelli' : 'Aktif'}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="action-btn block" onclick="toggleBlock(${user.id}, ${!user.is_blocked})">
-                                    ${user.is_blocked ? 'Engeli Kaldır' : 'Engelle'}
-                                </button>
-                                <button class="action-btn delete" onclick="deleteUser(${user.id})">
-                                    Sil
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
+                if (Array.isArray(data)) {
+                    allUsers = data;
+                    renderTable();
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-users"></i><br>Henüz kullanıcı yok</td></tr>';
+                    console.error('API Error:', data);
+                    const errorMsg = data.error || 'Bilinmeyen hata';
+                    document.getElementById('usersTable').innerHTML = `
+                        <tr><td colspan="8" style="text-align: center; padding: 40px; color: #e74c3c;">
+                            <i class="fa-solid fa-exclamation-triangle"></i> Hata: ${errorMsg}
+                        </td></tr>`;
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
+                document.getElementById('usersTable').innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 40px; color: #e74c3c;">
+                        <i class="fa-solid fa-wifi"></i> Sunucu bağlantı hatası!
+                    </td></tr>`;
+            }
+        }
+
+        function filterUsers(type) {
+            currentType = type;
+
+            // Update tabs
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(t => {
+                t.style.background = '#fff';
+                t.style.color = '#333';
+                t.style.borderColor = '#ddd';
+            });
+            event.target.style.background = '#1e3a5f';
+            event.target.style.color = '#fff';
+            event.target.style.borderColor = '#1e3a5f';
+
+            // Update title
+            document.getElementById('tableTitle').textContent = type === 'stk' ? 'STK Temsilcileri' : 'Standart Kullanıcılar';
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('usersTable');
+
+            const filtered = allUsers.filter(user => {
+                const isSTK = user.is_stk > 0; // Fix: boolean check logic
+                if (currentType === 'stk') return isSTK;
+                return !isSTK;
+            });
+
+            if (filtered.length > 0) {
+                tbody.innerHTML = filtered.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone || '-'}</td>
+                        <td>${formatDate(user.created_at)}</td>
+                        <td>
+                            <span class="status-badge ${user.is_blocked ? 'blocked' : 'active'}" 
+                                  style="padding: 4px 10px; border-radius: 15px; font-size: 11px; background: ${user.is_blocked ? '#ffebee' : '#e8f5e9'}; color: ${user.is_blocked ? '#c62828' : '#2e7d32'};">
+                                ${user.is_blocked ? 'Engelli' : 'Aktif'}
+                            </span>
+                        </td>
+                        <td>
+                             <span style="font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px; background: ${user.is_stk > 0 ? '#e3f2fd' : '#f5f5f5'}; color: ${user.is_stk > 0 ? '#1565c0' : '#616161'};">
+                                ${user.is_stk > 0 ? 'STK Temsilcisi' : 'Kullanıcı'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-btn block" onclick="toggleBlock(${user.id}, ${!user.is_blocked})"
+                                style="padding: 6px 12px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                                <i class="fa-solid ${user.is_blocked ? 'fa-lock-open' : 'fa-lock'}"></i> ${user.is_blocked ? 'Aç' : 'Engelle'}
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUser(${user.id})"
+                                style="padding: 6px 12px; border: 1px solid #e74c3c; background: #e74c3c; color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state" style="text-align:center; padding: 40px; color: #999;">
+                    <i class="fa-solid fa-users" style="font-size: 24px; margin-bottom: 10px;"></i><br>
+                    Bu kategoride kullanıcı bulunamadı
+                </td></tr>`;
+            }
+
+            // Init active tab style
+            const activeTab = document.querySelector(`.filter-tab[onclick*="'${currentType}'"]`);
+            if (activeTab) {
+                // Keep style in sync
+                activeTab.style.background = '#1e3a5f';
+                activeTab.style.color = '#fff';
             }
         }
 

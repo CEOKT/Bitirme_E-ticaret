@@ -17,6 +17,8 @@ db.exec(`
         first_name TEXT,
         last_name TEXT,
         phone TEXT,
+        role TEXT DEFAULT 'user', -- 'user', 'stk', 'admin'
+        status TEXT DEFAULT 'approved', -- 'pending', 'approved', 'rejected'
         is_blocked INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -76,10 +78,14 @@ db.exec(`
         rating INTEGER DEFAULT 0,
         donation_percent INTEGER DEFAULT 15,
         donation_org TEXT DEFAULT 'LÖSEV',
+        stk_id INTEGER, -- Link to STK if this is a campaign product
+        impact_title TEXT,
+        impact_description TEXT,
         is_featured INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (main_category_id) REFERENCES main_categories(id),
-        FOREIGN KEY (sub_category_id) REFERENCES sub_categories(id)
+        FOREIGN KEY (sub_category_id) REFERENCES sub_categories(id),
+        FOREIGN KEY (stk_id) REFERENCES users(id)
     );
 
     -- Product Features table
@@ -199,7 +205,55 @@ db.exec(`
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- STK Details table
+    CREATE TABLE IF NOT EXISTS stk_details (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        organization_name TEXT NOT NULL,
+        certificate_path TEXT,
+        description TEXT,
+        balance REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    -- STK Applications table
+    CREATE TABLE IF NOT EXISTS stk_applications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        organization_name TEXT NOT NULL,
+        organization_type TEXT,
+        activity_area TEXT,
+        description TEXT,
+        certificate_path TEXT,
+        status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    -- Campaigns table
+    CREATE TABLE IF NOT EXISTS campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        stk_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        target_amount REAL NOT NULL,
+        current_amount REAL DEFAULT 0,
+        image TEXT,
+        description TEXT,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (stk_id) REFERENCES users(id) ON DELETE CASCADE
+    );
 `);
+
+// Migration: Add role/status columns if they don't exist (for existing DBs)
+try {
+    db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run();
+} catch (e) { /* Column likely exists */ }
+
+try {
+    db.prepare("ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'approved'").run();
+} catch (e) { /* Column likely exists */ }
 
 // Insert default admin if not exists
 const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get();
@@ -221,6 +275,26 @@ if (mainCatCount.count === 0) {
     insertMainCat.run(6, 'Elektronik', 'elektronik', 'fa-laptop', 'Telefon, bilgisayar ve elektronik', 6);
 
     console.log('Main categories inserted!');
+}
+
+// Migration: Add stk_id to products if not exists
+try {
+    db.prepare("ALTER TABLE products ADD COLUMN stk_id INTEGER REFERENCES users(id)").run();
+} catch (e) { /* Column likely exists */ }
+
+// Migration: Add impact details to products
+try {
+    db.prepare("ALTER TABLE products ADD COLUMN impact_title TEXT").run();
+    db.prepare("ALTER TABLE products ADD COLUMN impact_description TEXT").run();
+} catch (e) { /* Columns likely exist */ }
+
+// Insert "Bağış Kampanyası" Main Category if not exists
+const campaignCat = db.prepare("SELECT id FROM main_categories WHERE slug = 'bagis-kampanyasi'").get();
+if (!campaignCat) {
+    db.prepare("INSERT INTO main_categories (name, slug, icon, description, sort_order) VALUES (?, ?, ?, ?, ?)").run(
+        'Bağış Kampanyası', 'bagis-kampanyasi', 'fa-hand-holding-heart', 'STK Bağış Kampanyası Ürünleri', 99
+    );
+    console.log('Bağış Kampanyası category created.');
 }
 
 // Insert sub categories
@@ -281,57 +355,11 @@ if (subCatCount.count === 0) {
 }
 
 // Check if products exist
+// Check if products exist
 const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get();
 
 if (productCount.count === 0) {
-    const insertProduct = db.prepare(`
-        INSERT INTO products (name, price, old_price, image, description, main_category_id, sub_category_id, brand, stock, rating, donation_percent, donation_org, is_featured)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    // Get subcategory IDs
-    const getSubCatId = db.prepare('SELECT id FROM sub_categories WHERE slug = ?');
-
-    // KADIN ÜRÜNLER
-    insertProduct.run('Kadın Yazlık Elbise', 599, 799, 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500', 'Şık ve rahat yazlık elbise', 1, getSubCatId.get('kadin-elbise')?.id, 'Zara', 25, 124, 15, 'LÖSEV', 1);
-    insertProduct.run('Kadın Topuklu Ayakkabı', 899, 1199, 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500', 'Klasik topuklu ayakkabı', 1, getSubCatId.get('kadin-ayakkabi')?.id, 'Aldo', 18, 89, 12, 'TEGV', 1);
-    insertProduct.run('Kadın Deri Çanta', 1299, 1599, 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500', 'Gerçek deri el çantası', 1, getSubCatId.get('kadin-canta')?.id, 'Michael Kors', 12, 156, 10, 'LÖSEV', 1);
-    insertProduct.run('Kadın Altın Kolye', 499, null, 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500', 'Altın kaplama kolye', 1, getSubCatId.get('kadin-aksesuar')?.id, 'Swarovski', 30, 67, 15, 'Kadın Dayanışma', 0);
-    insertProduct.run('Kadın Spor Ayakkabı', 799, null, 'https://images.unsplash.com/photo-1589182373726-c7a63b52a2f9?w=500', 'Rahat spor ayakkabı', 1, getSubCatId.get('kadin-spor')?.id, 'Nike', 22, 210, 10, 'TEMA', 1);
-    insertProduct.run('Kadın Basic Tişört', 199, 299, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500', '%100 pamuk tişört', 1, getSubCatId.get('kadin-tisort')?.id, 'Koton', 50, 180, 12, 'LÖSEV', 0);
-
-    // ERKEK ÜRÜNLER
-    insertProduct.run('Erkek Slim Fit Gömlek', 449, 599, 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500', 'Slim fit erkek gömleği', 2, getSubCatId.get('erkek-gomlek')?.id, 'Tommy Hilfiger', 35, 134, 10, 'LÖSEV', 1);
-    insertProduct.run('Erkek Polo Tişört', 399, 499, 'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=500', 'Polo yaka tişört', 2, getSubCatId.get('erkek-tisort')?.id, 'Lacoste', 40, 98, 12, 'TEGV', 1);
-    insertProduct.run('Erkek Deri Ayakkabı', 1499, 1899, 'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=500', 'Gerçek deri klasik ayakkabı', 2, getSubCatId.get('erkek-ayakkabi')?.id, 'Hotiç', 15, 87, 8, 'LÖSEV', 1);
-    insertProduct.run('Erkek Deri Mont', 2499, 2999, 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500', 'Gerçek deri ceket', 2, getSubCatId.get('erkek-mont')?.id, 'Derimod', 10, 67, 8, 'LÖSEV', 1);
-    insertProduct.run('Erkek Kol Saati', 1299, null, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500', 'Su geçirmez kol saati', 2, getSubCatId.get('erkek-aksesuar')?.id, 'Casio', 25, 234, 10, 'LÖSEV', 1);
-
-    // ÇOCUK ÜRÜNLER
-    insertProduct.run('Kız Çocuk Elbise', 299, 399, 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500', 'Renkli çocuk elbisesi', 3, getSubCatId.get('kiz-cocuk')?.id, 'LC Waikiki', 45, 156, 20, 'LÖSEV', 1);
-    insertProduct.run('Erkek Çocuk Tişört Seti', 249, 349, 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=500', '3lü tişört seti', 3, getSubCatId.get('erkek-cocuk')?.id, 'DeFacto', 60, 234, 18, 'TEGV', 1);
-    insertProduct.run('Bebek Tulumu', 199, null, 'https://images.unsplash.com/photo-1522771930-78848d7c9d50?w=500', 'Yumuşak pamuklu tulum', 3, getSubCatId.get('bebek')?.id, 'Carters', 30, 89, 20, 'LÖSEV', 0);
-    insertProduct.run('Çocuk Spor Ayakkabı', 399, 499, 'https://images.unsplash.com/photo-1555274175-75f79b09d5b8?w=500', 'Hafif spor ayakkabı', 3, getSubCatId.get('cocuk-ayakkabi')?.id, 'Adidas', 28, 178, 15, 'TEGV', 1);
-
-    // KOZMETİK
-    insertProduct.run('Ruj Seti', 299, null, 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500', '5li mat ruj seti', 4, getSubCatId.get('makyaj')?.id, 'MAC', 40, 423, 12, 'Kadın Dayanışma', 1);
-    insertProduct.run('Nemlendirici Krem', 349, 449, 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500', 'Hyaluronik asit içerikli', 4, getSubCatId.get('cilt-bakimi')?.id, 'Loreal', 55, 567, 15, 'Kadın Dayanışma', 1);
-    insertProduct.run('Saç Bakım Seti', 499, 649, 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500', 'Şampuan ve saç maskesi', 4, getSubCatId.get('sac-bakimi')?.id, 'Kerastase', 20, 145, 12, 'LÖSEV', 0);
-    insertProduct.run('Erkek Parfümü', 899, 1199, 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500', 'Eau de Parfum 100ml', 4, getSubCatId.get('parfum')?.id, 'Dior', 18, 289, 10, 'Kadın Dayanışma', 1);
-
-    // EV & YAŞAM
-    insertProduct.run('Modern Koltuk', 8999, 11999, 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500', '3 kişilik modern koltuk', 5, getSubCatId.get('mobilya')?.id, 'Ikea', 5, 45, 5, 'ÇEKÜL', 1);
-    insertProduct.run('Dekoratif Vazo', 299, 399, 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=500', 'Seramik dekoratif vazo', 5, getSubCatId.get('dekorasyon')?.id, 'English Home', 40, 89, 18, 'ÇEKÜL', 0);
-    insertProduct.run('Masa Lambası', 449, null, 'https://images.unsplash.com/photo-1507473888900-52e1ad14db3d?w=500', 'Ahşap gövdeli lamba', 5, getSubCatId.get('aydinlatma')?.id, 'Madame Coco', 22, 134, 15, 'ÇEKÜL', 1);
-    insertProduct.run('Çelik Tencere Seti', 1499, 1999, 'https://images.unsplash.com/photo-1584990347449-a8e0e50c3d8e?w=500', '8 parça çelik set', 5, getSubCatId.get('mutfak')?.id, 'Korkmaz', 15, 267, 10, 'LÖSEV', 1);
-
-    // ELEKTRONİK
-    insertProduct.run('Akıllı Telefon', 24999, 27999, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500', '128GB, 5G destekli', 6, getSubCatId.get('telefon')?.id, 'Samsung', 20, 456, 5, 'TEGV', 1);
-    insertProduct.run('Laptop', 34999, 39999, 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500', 'i7 işlemci, 16GB RAM', 6, getSubCatId.get('bilgisayar')?.id, 'Apple', 8, 312, 5, 'Darüşşafaka', 1);
-    insertProduct.run('Kablosuz Kulaklık', 1299, 1599, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500', 'Aktif gürültü engelleme', 6, getSubCatId.get('kulaklik')?.id, 'Sony', 35, 567, 8, 'LÖSEV', 1);
-    insertProduct.run('Akıllı Saat', 2999, 3499, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500', 'GPS ve kalp ritmi ölçümü', 6, getSubCatId.get('akilli-saat')?.id, 'Apple', 25, 398, 8, 'TEGV', 1);
-
-    console.log('Products inserted!');
+    console.log('No products found. Please run "node seed_full_products.js" to populate test data.');
 }
 
 // Check if brands exist

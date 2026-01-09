@@ -15,26 +15,52 @@ const Cart = {
     },
 
     // Add item to cart
-    async addItem(productId, quantity = 1) {
+    async addItem(productIdOrItem, quantity = 1) {
         if (window.CartAPI) {
             try {
-                await window.CartAPI.addItem(productId, quantity);
-                // Also save to local for redundancy/offline support if needed
-                // For now, trust API or fallback
-                return true;
+                // If it's a full object (custom item like donation), use API's specific method if available or fallback
+                // For now, let's assume API handles simple IDs only unless we expand it. 
+                // Since this is for Donation, let's prioritize local logic if API doesn't support custom items
+                if (typeof productIdOrItem === 'object') {
+                    // API might not support custom items yet, fallback to local for donations?
+                    // Or invoke a different API?
+                    // Let's fallback to local for donations to ensure they work immediately.
+                    console.log('Adding custom item (Donation) to local cart');
+                } else {
+                    await window.CartAPI.addItem(productIdOrItem, quantity);
+                    return true;
+                }
             } catch (error) {
-                console.warn('Cart API not available, falling back to local');
-                // Fallback to local
+                console.warn('Cart API error, falling back to local', error);
             }
         }
 
         const items = this.getItems();
-        const existingIndex = items.findIndex(item => item.productId === productId);
 
-        if (existingIndex > -1) {
-            items[existingIndex].quantity += quantity;
+        if (typeof productIdOrItem === 'object') {
+            // It's a full item object (e.g. Donation)
+            const item = productIdOrItem;
+            // Use 'id' or 'productId' for uniqueness
+            const id = item.id || item.productId;
+
+            const existingIndex = items.findIndex(i => (i.id === id || i.productId === id));
+
+            if (existingIndex > -1) {
+                items[existingIndex].quantity += (item.quantity || 1);
+            } else {
+                // Ensure ID is set
+                if (!item.productId) item.productId = id;
+                items.push(item);
+            }
         } else {
-            items.push({ productId, quantity });
+            // Standard Product ID
+            const existingIndex = items.findIndex(item => item.productId === productIdOrItem);
+
+            if (existingIndex > -1) {
+                items[existingIndex].quantity += quantity;
+            } else {
+                items.push({ productId: productIdOrItem, quantity });
+            }
         }
 
         this.saveItems(items);

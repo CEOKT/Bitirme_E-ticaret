@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STK Başvuruları - Destifo Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-admin.css">
+    <style>
+        /* Specific Styles for STK Page */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            border: none;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active,
+        .filter-tab:hover {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Modal specific */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .detail-row {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f9f9f9;
+            padding-bottom: 10px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 15px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-shield-halved"></i> <span>Destifo Admin</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="nav-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="stk.html" class="nav-item active">
+                    <i class="fa-solid fa-building-ngo"></i>
+                    <span>STK Başvuruları</span>
+                </a>
+                <a href="products.html" class="nav-item">
+                    <i class="fa-solid fa-box"></i>
+                    <span>Ürünler</span>
+                </a>
+                <a href="campaign-products.html" class="nav-item">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Kampanya Ürünleri</span>
+                </a>
+                <a href="donations.html" class="nav-item">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Bağışlar</span>
+                </a>
+                <a href="orders.html" class="nav-item">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span>Siparişler</span>
+                </a>
+                <a href="../index.html" class="nav-item"
+                    style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>Siteye Git</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>STK Başvuruları</h1>
+                <div class="admin-profile">
+                    <span id="adminName">Admin</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Bekleyen</h3>
+                            <i class="fa-solid fa-clock"
+                                style="color: #f39c12; background: rgba(243, 156, 18, 0.1);"></i>
+                        </div>
+                        <div class="stat-card-value" id="pendingCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Onaylı</h3>
+                            <i class="fa-solid fa-check-circle"
+                                style="color: #27ae60; background: rgba(39, 174, 96, 0.1);"></i>
+                        </div>
+                        <div class="stat-card-value" id="approvedCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <h3>Reddedilen</h3>
+                            <i class="fa-solid fa-times-circle"
+                                style="color: #e74c3c; background: rgba(231, 76, 60, 0.1);"></i>
+                        </div>
+                        <div class="stat-card-value" id="rejectedCount">0</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterApplications('all')">Tümü</button>
+                    <button class="filter-tab" onclick="filterApplications('pending')">Bekleyenler</button>
+                    <button class="filter-tab" onclick="filterApplications('approved')">Onaylılar</button>
+                    <button class="filter-tab" onclick="filterApplications('rejected')">Reddedilenler</button>
+                </div>
+
+                <!-- Table -->
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Kuruluş Adı</th>
+                                <th>Yetkili</th>
+                                <th>E-posta</th>
+                                <th>Telefon</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-building-ngo"></i> STK Detayları</h2>
+                <button class="modal-close" onclick="closeModal()"
+                    style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Actions loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let allApplications = [];
+        let currentFilter = 'all';
+
+        // Check auth
+        if (!localStorage.getItem('admin_token')) window.location.href = 'index.html';
+        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'index.html';
+        }
+
+        async function loadApplications() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stk-applications`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allApplications = data.applications;
+                    updateStats();
+                    renderTable();
+                } else {
+                    console.error('API Error:', data.error);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                document.getElementById('applicationsTable').innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 40px; color: #e74c3c;">
+                        <i class="fa-solid fa-exclamation-triangle"></i> Veri yüklenirken hata oluştu.
+                    </td></tr>
+                `;
+            }
+        }
+
+        function updateStats() {
+            const pending = allApplications.filter(a => a.status === 'pending').length;
+            const approved = allApplications.filter(a => a.status === 'approved').length;
+            const rejected = allApplications.filter(a => a.status === 'rejected').length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+        }
+
+        function filterApplications(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            const filtered = currentFilter === 'all'
+                ? allApplications
+                : allApplications.filter(a => a.status === currentFilter);
+
+            if (filtered.length === 0) {
+                document.getElementById('applicationsTable').innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                        <i class="fa-solid fa-inbox"></i> Başvuru bulunamadı.
+                    </td></tr>
+                `;
+                return;
+            }
+
+            document.getElementById('applicationsTable').innerHTML = filtered.map(app => `
+                <tr>
+                    <td>#${app.id}</td>
+                    <td><strong>${app.organization_name || 'Belirtilmemiş'}</strong></td>
+                    <td>${app.first_name || '-'} ${app.last_name || ''}</td>
+                    <td>${app.email}</td>
+                    <td>${app.phone || '-'}</td>
+                    <td><span class="status-badge ${app.status}">${getStatusText(app.status)}</span></td>
+                    <td>${formatDate(app.created_at)}</td>
+                    <td>
+                        <button onclick="viewDetails(${app.id})" style="background:#3498db; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        ${app.status === 'pending' ? `
+                            <button onclick="approveSTK(${app.id})" style="background:#27ae60; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" title="Onayla">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button onclick="rejectSTK(${app.id})" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" title="Reddet">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        ` : `
+                             <button onclick="resetSTK(${app.id})" style="background:#f39c12; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" title="Geri Al / Sıfırla">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        `}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Helper to get Status Badge Text/Class
+        function getStatusText(status) {
+            const texts = {
+                'pending': 'Bekliyor',
+                'approved': 'Onaylı',
+                'rejected': 'Reddedildi',
+                'frozen': 'Donduruldu',
+                'cancelled': 'İptal Edildi'
+            };
+            return texts[status] || status;
+        }
+        function formatDate(dateStr) { return dateStr ? new Date(dateStr).toLocaleDateString('tr-TR') : '-'; }
+
+        function viewDetails(id) {
+            const app = allApplications.find(a => a.id === id);
+            if (!app) return;
+
+            // Construct file URL
+            const fileUrl = app.certificate_path ? '/' + app.certificate_path.replace(/\\/g, '/') : '#';
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Kuruluş Adı</div>
+                    <div class="detail-value">${app.organization_name || 'Belirtilmemiş'}</div>
+                </div>
+                <!-- ... existing rows ... -->
+                 <div class="detail-row">
+                    <div class="detail-label">Yetkili</div>
+                    <div class="detail-value">${app.first_name || '-'} ${app.last_name || ''}</div>
+                </div>
+                 <div class="detail-row">
+                    <div class="detail-label">Belge</div>
+                    <div class="detail-value">
+                        ${app.certificate_path ?
+                    `<a href="${fileUrl}" target="_blank" style="color:#3498db;text-decoration:underline;">Belgeyi Görüntüle <i class="fa-solid fa-external-link-alt"></i></a>`
+                    : 'Yüklenmemiş'}
+                    </div>
+                </div>
+                 <div class="detail-row">
+                    <div class="detail-label">Durum</div>
+                    <div class="detail-value"><span class="status-badge ${app.status}">${getStatusText(app.status)}</span></div>
+                </div>
+            `;
+
+            // Dynamic Buttons based on Status
+            let buttonsHtml = '';
+
+            if (app.status === 'pending') {
+                buttonsHtml = `
+                    <button onclick="approveSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; margin-right:5px;">Onayla</button>
+                    <button onclick="rejectSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer;">Reddet</button>
+                `;
+            } else if (app.status === 'approved') {
+                buttonsHtml = `
+                    <button onclick="freezeSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#3498db; color:white; border:none; border-radius:6px; cursor:pointer; margin-right:5px;">Lisansı Dondur</button>
+                    <button onclick="cancelSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#e67e22; color:white; border:none; border-radius:6px; cursor:pointer; margin-right:5px;">Lisansı İptal Et</button>
+                    <button onclick="resetSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">Geri Al (Bekliyor)</button>
+                `;
+            } else if (app.status === 'frozen' || app.status === 'cancelled' || app.status === 'rejected') {
+                buttonsHtml = `
+                    <button onclick="reactivateSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; margin-right:5px;">Tekrar Aktifleştir</button>
+                    <button onclick="deleteSTK(${app.id}); closeModal();" style="padding:10px 20px; background:#c0392b; color:white; border:none; border-radius:6px; cursor:pointer;">Sil</button>
+                `;
+            }
+
+            buttonsHtml += `<button onclick="closeModal()" style="padding:10px 20px; background:#f1f2f6; color:#636e72; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">Kapat</button>`;
+
+            document.getElementById('modalFooter').innerHTML = buttonsHtml;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        // ... closeModal ...
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+        async function approveSTK(id) { return updateStatus(id, 'approve'); }
+        async function rejectSTK(id) { return updateStatus(id, 'reject'); }
+        async function resetSTK(id) { return updateStatus(id, 'reset'); }
+
+        async function freezeSTK(id) { return updateStatus(id, 'freeze'); }
+        async function cancelSTK(id) { return updateStatus(id, 'cancel'); }
+        async function reactivateSTK(id) { return updateStatus(id, 'reactivate'); }
+        async function deleteSTK(id) { return updateStatus(id, 'delete'); }
+
+        async function updateStatus(id, action) {
+            if (!confirm('Bu işlemi yapmak istediğinize emin misiniz?')) return;
+            try {
+                const token = localStorage.getItem('admin_token');
+                const response = await fetch(`${API_BASE}/admin/${action}-stk/${id}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadApplications();
+                    alert('İşlem başarılı: ' + (data.message || ''));
+                } else {
+                    alert('Hata: ' + data.error);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', loadApplications);
+    </script>
+</body>
+
+</html>

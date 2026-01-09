@@ -214,10 +214,12 @@
                 <div class="account-nav-item logout" id="logoutBtn">
                     <i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap
                 </div>
-                <a href="admin/index.html" class="account-nav-item"
-                    style="color: #666; margin-top: 1rem; border-top: 1px solid #eee;">
-                    <i class="fa-solid fa-shield-halved"></i> Yönetici Girişi
+
+                <a href="stk-kayit.html" class="account-nav-item"
+                    style="margin-top: 20px; background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border-radius: 10px; text-decoration: none;">
+                    <i class="fa-solid fa-building-ngo"></i> STK / Dernek Başvurusu
                 </a>
+
             </nav>
         </div>
 
@@ -721,7 +723,12 @@
 
         async function loadProfile() {
             const token = localStorage.getItem('destifo_token');
+            if (!token) return;
+
             try {
+                // Use generic profile endpoint or fallback to known good ID-based if needed
+                // Assuming /api/auth/me or similar was intended, but let's stick to what we know works usually
+                // or just use the one we saw earlier: /api/auth/me (Step 1443 line 727)
                 const res = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -740,6 +747,27 @@
                 const sidebarEmail = document.querySelector('.user-info p');
                 if (sidebarName) sidebarName.textContent = `${user.firstName} ${user.lastName}`;
                 if (sidebarEmail) sidebarEmail.textContent = user.email;
+
+                // STK Button Logic
+                const stkBtn = document.querySelector('a[href="stk-kayit.html"]');
+                if (stkBtn) {
+                    if (user.stk_status === 'pending') {
+                        stkBtn.href = '#';
+                        stkBtn.innerHTML = '<i class="fa-solid fa-clock"></i> STK Başvurusu İnceleniyor';
+                        stkBtn.style.background = '#f39c12'; // Orange
+                        stkBtn.style.cursor = 'default';
+                        stkBtn.onclick = (e) => { e.preventDefault(); alert('Başvurunuz şu anda yönetici onayı beklemektedir.'); };
+                    } else if (user.stk_status === 'approved') {
+                        stkBtn.href = 'stk-panel.html';
+                        stkBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> STK Yönetim Paneli';
+                        stkBtn.style.background = '#27ae60'; // Green
+                    } else if (user.stk_status === 'rejected') {
+                        stkBtn.href = '#';
+                        stkBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Başvuru Reddedildi';
+                        stkBtn.style.background = '#c0392b'; // Red
+                        stkBtn.onclick = (e) => { e.preventDefault(); alert('Başvurunuz reddedilmiştir. Lütfen iletişime geçiniz.'); }; // Or allow re-apply logic
+                    }
+                }
 
             } catch (error) {
                 console.error('Error loading profile:', error);

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni Kampanya Oluştur - Destifo STK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: #6c5ce7;
+            outline: none;
+        }
+
+        .form-textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #636e72;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            background-color: #f1f2f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="fixed-header-wrapper">
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="color: inherit; text-decoration: none; font-weight: 800; font-size: 24px;">Destifo
+                        STK</a>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <a href="stk-panel.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Panele Dön</a>
+
+            <div class="form-header">
+                <h1><i class="fa-solid fa-hand-holding-heart"></i> Yeni İyilik Kampanyası</h1>
+                <p>İhtiyaç sahiplerine ulaşmak için bağış kampanyası oluşturun.</p>
+            </div>
+
+            <form id="campaignForm">
+                <div class="form-group">
+                    <label class="form-label">Kampanya Başlığı</label>
+                    <input type="text" id="title" class="form-input" placeholder="Örn: Köy Okullarına Bot Yardımı"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hedef Bağış Tutarı (TL)</label>
+                    <input type="number" id="target" class="form-input" placeholder="Örn: 50000" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Görsel URL</label>
+                    <input type="url" id="image" class="form-input" placeholder="https://..."
+                        onchange="updatePreview()">
+                    <img id="imagePreview" class="preview-image" alt="Önizleme">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kampanya Hikayesi</label>
+                    <textarea id="description" class="form-textarea"
+                        placeholder="Kampanyanızın amacını ve detaylarını anlatın..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-paper-plane"></i> Kampanyayı Yayınla
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            const url = document.getElementById('image').value;
+            const img = document.getElementById('imagePreview');
+            if (url) {
+                img.src = url;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+        }
+
+        document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem('destifo_token');
+            if (!token) {
+                alert('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const data = {
+                title: document.getElementById('title').value,
+                target_amount: parseFloat(document.getElementById('target').value),
+                image: document.getElementById('image').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const btn = document.querySelector('.btn-submit');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+                btn.disabled = true;
+
+                const response = await fetch('/api/stk/campaigns', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Kampanya başarıyla oluşturuldu! Onay süreci için yöneticiye iletildi.');
+                    window.location.href = 'stk-panel.html';
+                } else {
+                    throw new Error(result.error || 'Bir hata oluştu');
+                }
+
+            } catch (error) {
+                alert('Hata: ' + error.message);
+                const btn = document.querySelector('.btn-submit');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STK Başvurusu - Destifo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/pages.css">
+    <style>
+        .stk-page {
+            padding: 60px 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .stk-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .stk-header h1 {
+            font-size: 36px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .stk-header h1 i {
+            color: var(--secondary-color);
+        }
+
+        .stk-header p {
+            font-size: 18px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stk-form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h3 i {
+            color: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group label span.required {
+            color: #e74c3c;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group .file-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-group .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-btn {
+            padding: 12px 24px;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .file-upload-btn:hover {
+            border-color: var(--secondary-color);
+            background: #fff5ed;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--secondary-color), #f39c12);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.35);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(230, 126, 34, 0.45);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #2e7d32;
+            font-size: 14px;
+        }
+
+        .info-box i {
+            margin-right: 8px;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-message i {
+            font-size: 80px;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Fixed Header Wrapper -->
+    <div class="fixed-header-wrapper">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="container header-inner">
+                <div class="logo">
+                    <a href="index.html"
+                        style="display: flex; align-items: center; color: inherit; text-decoration: none;">
+                        <img src="images/logo.png" alt="Destifo Logo" style="height: 40px; margin-right: 8px;">
+                        <span class="logo-text">Destifo</span>
+                    </a>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Ürün, kategori veya marka ara...">
+                    <button type="submit" onclick="performSearch()"><i
+                            class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <div class="header-actions">
+                    <a href="account.html" class="action-item">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Hesabım</span>
+                    </a>
+                    <a href="favorites.html" class="action-item">
+                        <i class="fa-solid fa-heart"></i>
+                        <span>Favorilerim</span>
+                    </a>
+                    <a href="cart.html" class="action-item">
+                        <div class="cart-icon-wrapper">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                        <span>Sepetim</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs container">
+        <a href="index.html">Anasayfa</a> <i class="fa-solid fa-chevron-right"></i>
+        <span class="current">STK Başvurusu</span>
+    </div>
+
+    <!-- STK Registration Page -->
+    <section class="stk-page container">
+        <div class="stk-header">
+            <h1><i class="fa-solid fa-building-ngo"></i> STK / Dernek Başvurusu</h1>
+            <p>Destifo'ya katılarak binlerce kullanıcıdan destek alabilir, kampanyalarınızı duyurabilirsiniz.</p>
+        </div>
+
+        <div class="stk-form-container">
+            <div class="info-box">
+                <p><i class="fa-solid fa-circle-info"></i> Başvurunuz onaylandıktan sonra kampanya oluşturabilir ve
+                    bağış alabilirsiniz. Onay süreci 1-3 iş günü sürmektedir.</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="stkForm" enctype="multipart/form-data">
+                <div class="form-section" id="orgSection">
+                    <h3><i class="fa-solid fa-building"></i> Kuruluş Bilgileri</h3>
+
+                    <div class="form-group">
+                        <label>Kuruluş Adı <span class="required">*</span></label>
+                        <input type="text" id="orgName" name="organizationName" required
+                            placeholder="Örn: LÖSEV, TEGV, TEMA...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Kuruluş Türü <span class="required">*</span></label>
+                        <select id="orgType" name="organizationType" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="dernek">Dernek</option>
+                            <option value="vakif">Vakıf</option>
+                            <option value="stk">Sivil Toplum Kuruluşu</option>
+                            <option value="kooperatif">Kooperatif</option>
+                            <option value="diger">Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Faaliyet Alanı <span class="required">*</span></label>
+                        <select id="activityArea" name="activityArea" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="egitim">Eğitim</option>
+                            <option value="saglik">Sağlık</option>
+                            <option value="cevre">Çevre</option>
+                            <option value="hayvan">Hayvan Hakları</option>
+                            <option value="sosyal">Sosyal Yardım</option>
+                            <option value="kultur">Kültür & Sanat</option>
+                            <option value="spor">Spor</option>
+                            <option value="diger">Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Kuruluş Hakkında <span class="required">*</span></label>
+                        <textarea id="description" name="description" required
+                            placeholder="Kuruluşunuzun misyonu, vizyonu ve faaliyetleri hakkında kısa bilgi..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section" id="userSection">
+                    <h3><i class="fa-solid fa-user-tie"></i> Yetkili Bilgileri</h3>
+
+                    <div class="form-group">
+                        <label>Yetkili Ad Soyad <span class="required">*</span></label>
+                        <input type="text" id="contactName" name="contactName" required placeholder="Ad Soyad">
+                    </div>
+
+                    <div class="form-group">
+                        <label>E-posta <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" required placeholder="ornek@kurulusunuz.org">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Telefon <span class="required">*</span></label>
+                        <input type="tel" id="phone" name="phone" required placeholder="05XX XXX XX XX">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Şifre <span class="required">*</span></label>
+                        <input type="password" id="password" name="password" required minlength="6"
+                            placeholder="En az 6 karakter">
+                    </div>
+                </div>
+
+                <div class="form-section" id="docSection">
+                    <h3><i class="fa-solid fa-file-certificate"></i> Belgeler</h3>
+
+                    <div class="form-group">
+                        <label>Kuruluş Belgesi (Dernek/Vakıf Senedi) <span class="required">*</span></label>
+                        <div class="file-input-wrapper">
+                            <label class="file-upload-btn" for="certificate">
+                                <i class="fa-solid fa-cloud-upload-alt"></i>
+                                <span>Dosya Seç (PDF, JPG, PNG)</span>
+                            </label>
+                            <input type="file" id="certificate" name="certificate" accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+                        <span class="file-name" id="fileName">Henüz dosya seçilmedi</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fa-solid fa-paper-plane"></i> Başvuruyu Gönder
+                </button>
+            </form>
+
+            <!-- Success Message (hidden initially) -->
+            <div class="success-message" id="successMessage">
+                <i class="fa-solid fa-circle-check"></i>
+                <h2>Başvurunuz Alındı!</h2>
+                <p>Başvurunuz incelemeye alınmıştır. Onay durumu hakkında e-posta ile bilgilendirileceksiniz.</p>
+                <a href="index.html" class="submit-btn" style="display: inline-flex; width: auto;">
+                    <i class="fa-solid fa-home"></i> Anasayfaya Dön
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Destifo</span>
+                </div>
+                <p class="footer-desc">Türkiye'nin en büyük sosyal sorumluluk pazar yeri.</p>
+            </div>
+        </div>
+        <div class="footer-bottom container">
+            <div class="copyright">© 2024 Destifo Teknoloji A.Ş. Tüm hakları saklıdır.</div>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // File input display
+        document.getElementById('certificate').addEventListener('change', function (e) {
+            const fileName = e.target.files[0]?.name || 'Henüz dosya seçilmedi';
+            document.getElementById('fileName').textContent = fileName;
+        });
+
+        // Check Login Status on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('destifo_token');
+            if (token) {
+                // User is logged in
+                const userSection = document.querySelector('.form-section:nth-of-type(2)'); // "Yetkili Bilgileri" section
+                if (userSection) {
+                    userSection.style.display = 'none'; // Hide user info section
+                    // Exclude required checks for hidden inputs? 
+                    // Browsers might block submit if hidden fields are required. 
+                    // Remove 'required' attribute from hidden inputs
+                    userSection.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
+                }
+
+                // Maybe show a welcome message? "Zaten giriş yaptınız, sadece STK bilgileri ve belge yükleyiniz."
+                const headerP = document.querySelector('.stk-header p');
+                if (headerP) headerP.innerHTML = 'Mevcut hesabınızla STK başvurusu yapıyorsunuz.<br>Lütfen kuruluş bilgilerini ve gerekli belgeleri yükleyiniz.';
+            }
+        });
+
+        // Form submission
+        document.getElementById('stkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+
+            const token = localStorage.getItem('destifo_token');
+
+            try {
+                const formData = new FormData();
+                formData.append('organizationName', document.getElementById('orgName').value);
+                formData.append('organizationType', document.getElementById('orgType').value);
+                formData.append('activityArea', document.getElementById('activityArea').value);
+                formData.append('description', document.getElementById('description').value);
+
+                const certificateFile = document.getElementById('certificate').files[0];
+                if (!certificateFile) {
+                    alert('Lütfen Kuruluş Belgesi (Dernek/Vakıf Senedi) seçiniz.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Başvuruyu Gönder';
+                    return;
+                }
+
+                if (certificateFile) {
+                    formData.append('certificate', certificateFile);
+                }
+
+                let url, method = 'POST', headers = {};
+
+                if (token) {
+                    // Upgrade Mode
+                    url = '/api/stk/upgrade';
+                    headers['Authorization'] = `Bearer ${token}`;
+                    // User info not needed
+                } else {
+                    // Register Mode
+                    url = '/api/stk/register'; // Use the endpoint that handles file upload
+                    formData.append('contactName', document.getElementById('contactName').value);
+                    formData.append('email', document.getElementById('email').value);
+                    formData.append('phone', document.getElementById('phone').value);
+                    formData.append('password', document.getElementById('password').value);
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers, // Authorization
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Show success message
+                    document.getElementById('stkForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Başvuru gönderilemedi');
+                }
+
+            } catch (error) {
+                alert('Hata: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Başvuruyu Gönder';
+            }
+        });
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                window.location.href = `category.html?search=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
+</body>
+
+</html>

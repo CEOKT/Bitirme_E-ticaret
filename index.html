@@ -12,7 +12,21 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/products.css">
     <link rel="stylesheet" href="css/pages.css">
+    <link rel="stylesheet" href="css/campaigns.css">
     <style>
+        /* Override specifically for home page usage */
+        .home-tabs-section .campaigns-container,
+        #home-campaigns-section .campaigns-container,
+        #home-charity-section .campaigns-container {
+            margin-top: 0 !important;
+            padding-bottom: 0;
+        }
+
+        /* Update loading color for white background sections */
+        #loading-charity {
+            color: #1e3a5f !important;
+        }
+
         /* Product Grid */
         .product-grid {
             display: grid;
@@ -898,6 +912,90 @@
         </div>
     </section>
 
+    <!-- Categories and İyilik Yap will be moved to after campaigns -->
+
+    <!-- Campaigns Section with Tabs Inside -->
+    <section id="home-campaigns-section" class="campaigns-section"
+        style="padding: 40px 0 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); position: relative; overflow: hidden; min-height: 500px;">
+        <!-- Animated Background Elements -->
+        <div
+            style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: pulse 4s ease-in-out infinite;">
+        </div>
+        <div
+            style="position: absolute; bottom: -50px; left: 10%; width: 200px; height: 200px; background: rgba(255,255,255,0.08); border-radius: 50%; animation: pulse 3s ease-in-out infinite;">
+        </div>
+        <div
+            style="position: absolute; top: 50%; left: -80px; width: 160px; height: 160px; background: rgba(255,255,255,0.06); border-radius: 50%;">
+        </div>
+
+        <!-- Section Header with Tabs -->
+        <div class="container" style="text-align: center; position: relative; z-index: 5; margin-bottom: 30px;">
+            <h2
+                style="color: white; font-size: 32px; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <i class="fa-solid fa-fire" style="color: #ff6b6b;"></i>
+                Acil Bağış Kampanyaları
+            </h2>
+
+            <!-- Tabs Inside Purple Section -->
+            <div class="tabs-wrapper"
+                style="display: inline-flex; justify-content: center; gap: 15px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50px; backdrop-filter: blur(10px);">
+                <button class="tab-btn active" onclick="switchHomeTab('campaigns')" id="home-tab-campaigns"
+                    style="padding: 10px 25px; border: none; background: white; border-radius: 40px; font-weight: 700; color: #764ba2; cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-hand-holding-heart"></i> Kampanyalar
+                </button>
+                <button class="tab-btn" onclick="switchHomeTab('charity')" id="home-tab-charity"
+                    style="padding: 10px 25px; border: none; background: transparent; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-gift"></i> İyilik Ürünleri
+                </button>
+            </div>
+        </div>
+
+        <!-- Campaigns Grid -->
+        <div class="container campaigns-container" id="campaigns-tab-content">
+            <div class="campaigns-grid" id="campaignsGrid">
+                <!-- Loading State -->
+                <div id="loading">
+                    <i class="fa-solid fa-spinner fa-spin fa-3x" style="color: white;"></i>
+                    <p style="margin-top: 15px; font-weight: 500; color: white;">İyilikler yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charity Grid (hidden by default, shown when tab switched) -->
+        <div class="container campaigns-container" id="charity-tab-content" style="display: none;">
+            <div class="campaigns-grid" id="homeCharityGrid">
+                <div id="loading-charity">
+                    <i class="fa-solid fa-spinner fa-spin fa-3x" style="color: white;"></i>
+                    <p style="margin-top: 15px; font-weight: 500; color: white;">Ürünler yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- View All Button -->
+        <div class="container" style="text-align: center; margin-top: 40px; position: relative; z-index: 10;">
+            <a href="campaigns.html"
+                style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 35px; background: white; color: #764ba2; border-radius: 50px; font-weight: 700; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s;">
+                <i class="fa-solid fa-arrow-right"></i> Tüm Kampanyaları Gör
+            </a>
+        </div>
+    </section>
+    <!-- STK Selection Modal (hidden) -->
+    <div id="stkModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content"
+            style="background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; text-align: center;">
+            <h3 style="color: #1e3a5f; margin-bottom: 15px;">Bir Kurum Seçin</h3>
+            <p style="color: #636e72; margin-bottom: 25px;">Bu iyilik ürününü hangi kuruluş adına bağışlamak istersiniz?
+            </p>
+
+            <div id="stkList" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 20px;">
+                <!-- STK List -->
+            </div>
+
+            <button onclick="closeStkModal()"
+                style="background: #dfe6e9; color: #636e72; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">İptal</button>
+        </div>
+    </div>
+
     <!-- Categories Section -->
     <section class="categories-section container">
         <div class="section-header">
@@ -938,7 +1036,7 @@
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <a href="categories.html?donate=true"
                         style="display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; background: var(--secondary-color); color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; transition: all 0.3s; box-shadow: 0 8px 25px rgba(230, 126, 34, 0.4);">
-                        <i class="fa-solid fa-heart"></i> Bağış Yap
+                        <i class="fa-solid fa-heart"></i> İyilik Yap
                     </a>
                     <a href="categories.html"
                         style="display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; background: rgba(255,255,255,0.15); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; transition: all 0.3s; border: 2px solid rgba(255,255,255,0.3);">
@@ -952,7 +1050,8 @@
                 style="flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1;">
                 <div
                     style="text-align: center; padding: 20px 30px; background: rgba(255,255,255,0.1); border-radius: 16px;">
-                    <div style="font-size: 28px; font-weight: 800; color: var(--secondary-color);">7+</div>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--secondary-color);" id="totalNGOs2">0+
+                    </div>
                     <div style="font-size: 13px; color: white; opacity: 0.8;">Desteklenen STK</div>
                 </div>
                 <div
@@ -997,6 +1096,28 @@
             <div class="copyright">© 2024 Destifo Teknoloji A.Ş. Tüm hakları saklıdır.</div>
         </div>
     </footer>
+
+    <!-- STK Selection Modal -->
+    <div id="stkModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);">
+        <div
+            style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <i class="fa-solid fa-handshake-angle" style="font-size: 50px; color: #764ba2; margin-bottom: 20px;"></i>
+            <h3 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px;">Bir Kurum Seçin</h3>
+            <p style="color: #636e72; margin-bottom: 25px;">Bağışınızın hangi kurum aracılığıyla iletilmesini
+                istersiniz?</p>
+
+            <div id="stkList"
+                style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 20px; padding-right: 5px;">
+                <!-- STK List -->
+            </div>
+
+            <button onclick="closeStkModal()"
+                style="background: #dfe6e9; color: #636e72; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 15px;">
+                Vazgeç
+            </button>
+        </div>
+    </div>
 
     <script src="js/api.js"></script>
     <script src="js/cart.js"></script>
@@ -1073,15 +1194,65 @@
                     navMenu.appendChild(li);
                 });
 
-                // Add "İyilik Yap" special donation link
-                const donationLi = document.createElement('li');
-                donationLi.className = 'nav-item donation-nav-item';
-                donationLi.innerHTML = `
-                    <a href="categories.html?donate=true" class="donation-nav-link">
-                        <i class="fa-solid fa-hand-holding-heart"></i> İyilik Yap
-                    </a>
+                // Add unified "İyilik Yap" + "Kampanyalar" capsule
+                const actionCapsule = document.createElement('li');
+                actionCapsule.className = 'nav-item';
+                actionCapsule.innerHTML = `
+                    <style>
+                        .action-capsule {
+                            display: inline-flex;
+                            border-radius: 30px;
+                            overflow: hidden;
+                            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+                        }
+                        .capsule-btn {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                            padding: 12px 22px;
+                            font-weight: 600;
+                            font-size: 13px;
+                            text-decoration: none;
+                            transition: all 0.3s ease;
+                            border: none;
+                            cursor: pointer;
+                            border-radius: 0;
+                        }
+                        .capsule-btn.iyilik {
+                            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+                            color: white;
+                            border-radius: 30px 0 0 30px;
+                        }
+                        .capsule-btn.iyilik:hover {
+                            background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+                            transform: scale(1.02);
+                        }
+                        .capsule-btn.kampanya {
+                            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+                            color: white;
+                            border-radius: 0 30px 30px 0;
+                            animation: pulse-glow 2s ease-in-out infinite;
+                        }
+                        .capsule-btn.kampanya:hover {
+                            animation: none;
+                            background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+                            transform: scale(1.02);
+                        }
+                        @keyframes pulse-glow {
+                            0%, 100% { box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1); }
+                            50% { box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2); }
+                        }
+                    </style>
+                    <div class="action-capsule">
+                        <a href="categories.html?donate=true" class="capsule-btn iyilik">
+                            <i class="fa-solid fa-hand-holding-heart"></i> İyilik Yap
+                        </a>
+                        <a href="campaigns.html" class="capsule-btn kampanya">
+                            <i class="fa-solid fa-fire"></i> Kampanyalar
+                        </a>
+                    </div>
                 `;
-                navMenu.appendChild(donationLi);
+                navMenu.appendChild(actionCapsule);
             } catch (error) {
                 console.error('Navigation error:', error);
             }
@@ -1165,6 +1336,66 @@
             }
         }
 
+        // Load Campaigns (Real fundraising campaigns, not products)
+        async function loadCampaigns() {
+            try {
+                const response = await fetch(`${API_BASE}/campaigns`);
+                if (!response.ok) throw new Error('Campaigns unavailable');
+
+                const campaigns = await response.json();
+                const grid = document.getElementById('campaignsGrid');
+
+                if (!campaigns || campaigns.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; padding: 40px;"><i class="fa-solid fa-heart" style="font-size: 40px; margin-bottom: 15px;"></i><p>Şu an aktif kampanya bulunmamaktadır.</p></div>';
+                    return;
+                }
+
+                // Only show first 4 campaigns on homepage
+                const limitedCampaigns = campaigns.slice(0, 4);
+                window.homeCampaigns = limitedCampaigns; // Store globally for access
+
+                grid.innerHTML = limitedCampaigns.map(c => {
+                    const percent = Math.min(100, Math.round((c.current_amount / c.target_amount) * 100));
+                    const isUrgent = percent >= 80;
+
+                    return `
+                    <div class="campaign-card visible" onclick="window.location.href='campaign-details.html?id=${c.id}'" style="cursor: pointer;">
+                        <div class="card-image-wrapper">
+                            <img src="${c.image || 'images/placeholder-campaign.jpg'}" alt="${c.title}" onerror="this.src='images/placeholder-campaign.jpg'">
+                            <div class="org-badge">
+                                <i class="fa-solid fa-hand-holding-heart"></i> ${c.organization_name || 'Destifo STK'}
+                            </div>
+                            ${isUrgent ? '<div class="urgent-badge"><i class="fa-solid fa-fire"></i> ACİL</div>' : ''}
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${c.title}</h3>
+                            <p class="card-desc">${c.description ? c.description.substring(0, 80) + '...' : ''}</p>
+                            <div class="progress-section">
+                                <div class="progress-info">
+                                    <span class="raised"><i class="fa-solid fa-wallet"></i> ${(c.current_amount || 0).toLocaleString('tr-TR')} TL</span>
+                                    <span class="percentage">%${percent}</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: ${percent}%"></div>
+                                </div>
+                                <div class="target-info">Hedef: ${(c.target_amount || 0).toLocaleString('tr-TR')} TL</div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="donate-btn" onclick="event.stopPropagation(); window.location.href='campaign-details.html?id=${c.id}'">
+                                    <i class="fa-solid fa-heart"></i> DESTEK OL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+
+            } catch (error) {
+                console.error('Campaigns load error:', error);
+                const grid = document.getElementById('campaignsGrid');
+                if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; padding: 40px;"><p>Kampanyalar yüklenemedi.</p></div>';
+            }
+        }
+
         // Animate numbers
         function animateValue(obj, start, end, duration, isCurrency = false) {
             let startTimestamp = null;
@@ -1207,10 +1438,12 @@
                 const donationEl = document.getElementById('totalDonation');
                 const ordersEl = document.getElementById('totalOrders');
                 const ngoEl = document.getElementById('totalNGOs');
+                const ngoEl2 = document.getElementById('totalNGOs2');
 
                 if (donationEl) animateValue(donationEl, 0, donationVal, 2000, true);
                 if (ordersEl) animateValue(ordersEl, 0, orderVal, 1500);
                 if (ngoEl) animateValue(ngoEl, 0, ngoVal, 1000);
+                if (ngoEl2) animateValue(ngoEl2, 0, ngoVal, 1000);
 
             } catch (error) {
                 console.log('Stats not available', error);
@@ -1264,6 +1497,7 @@
             await loadFeaturedProducts();
             await loadCategoriesGrid();
             await loadGlobalStats();
+            await loadCampaigns();
 
             try {
                 await CartAPI.updateCartCount();
@@ -1275,8 +1509,133 @@
             document.getElementById('searchInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') performSearch();
             });
+
+            // Set initial tab state
+            switchHomeTab('campaigns');
         });
+
+        // Tab Switching for Home Page (Campaigns vs Charity)
+        function switchHomeTab(tab) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'white';
+            });
+            const activeBtn = document.getElementById(`home-tab-${tab}`);
+            if (activeBtn) {
+                activeBtn.style.background = 'white';
+                activeBtn.style.color = '#764ba2';
+            }
+
+            // Update Content Divs (both inside same section now)
+            const campContent = document.getElementById('campaigns-tab-content');
+            const charContent = document.getElementById('charity-tab-content');
+
+            if (campContent) campContent.style.display = tab === 'campaigns' ? 'block' : 'none';
+            if (charContent) charContent.style.display = tab === 'charity' ? 'block' : 'none';
+
+            // Load Charity Products if first time
+            if (tab === 'charity' && !window.homeCharityLoaded) {
+                if (typeof loadCharityProducts === 'function') {
+                    loadCharityProducts('homeCharityGrid');
+                    window.homeCharityLoaded = true;
+                }
+            }
+        }
+
+        // Campaign STK Selection
+        let selectedCampaignData = null;
+        let campaignStks = [];
+
+        async function openCampaignStkSelection(campaignId) {
+            // Find campaign data from global list
+            const campaign = window.homeCampaigns ? window.homeCampaigns.find(c => c.id === campaignId) : null;
+
+            if (!campaign) {
+                console.error('Campaign not found', campaignId);
+                return;
+            }
+
+            selectedCampaignData = {
+                campaignId: campaign.id,
+                campaignTitle: campaign.title,
+                campaignImage: campaign.image || 'images/placeholder-campaign.jpg',
+                targetAmount: campaign.target_amount
+            };
+
+            const modal = document.getElementById('stkModal');
+            const list = document.getElementById('stkList');
+
+            if (!modal || !list) {
+                alert('Modal bulunamadı');
+                return;
+            }
+
+            modal.style.display = 'flex';
+            list.innerHTML = '<p style="text-align: center;">Kurumlar yükleniyor...</p>';
+
+            // Load STKs if not already loaded
+            if (campaignStks.length === 0) {
+                try {
+                    const response = await fetch('/api/stks');
+                    if (response.ok) {
+                        campaignStks = await response.json();
+                    }
+                } catch (e) {
+                    console.error('STK load error:', e);
+                }
+            }
+
+            if (campaignStks.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #e74c3c;">Kurum bulunamadı.</p>';
+                return;
+            }
+
+            // Render STK list for campaign donation
+            list.innerHTML = campaignStks.map(stk => `
+                <div class="stk-item" onclick="selectCampaignStk(${stk.id}, '${stk.name.replace(/'/g, "\\'")}')" 
+                     style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 2px solid #dfe6e9; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.3s;">
+                    <img src="${stk.logo || 'images/stk-placeholder.png'}" alt="${stk.name}" 
+                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" 
+                         onerror="this.src='images/stk-placeholder.png'">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #1e3a5f;">${stk.name}</div>
+                        <div style="font-size: 12px; color: #b2bec3;">${stk.description ? stk.description.substring(0, 50) + '...' : ''}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color: #764ba2;"></i>
+                </div>
+            `).join('');
+        }
+
+        function selectCampaignStk(stkId, stkName) {
+            closeStkModal();
+
+            if (!selectedCampaignData) {
+                alert('Kampanya bilgisi bulunamadı.');
+                return;
+            }
+
+            // Redirect to payment with campaign + STK info
+            const params = new URLSearchParams({
+                mode: 'campaign-donation',
+                campaignId: selectedCampaignData.campaignId,
+                campaignTitle: selectedCampaignData.campaignTitle,
+                campaignImage: selectedCampaignData.campaignImage,
+                targetAmount: selectedCampaignData.targetAmount,
+                stkId: stkId,
+                stkName: stkName
+            });
+
+            window.location.href = `payment.html?${params.toString()}`;
+        }
+
+        // Expose functions to global scope
+        window.openCampaignStkSelection = openCampaignStkSelection;
+        window.selectCampaignStk = selectCampaignStk;
     </script>
+
+    <!-- Charity Products Script (for İyilik Ürünleri tab) -->
+    <script src="js/charity-products.js"></script>
 </body>
 
 </html>

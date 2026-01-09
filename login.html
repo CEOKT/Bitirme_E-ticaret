@@ -504,6 +504,29 @@
                 <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
                     <div class="auth-message" id="registerMessage"></div>
 
+                    <!-- Account Type Selection -->
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label>Hesap Türü</label>
+                        <div style="display: flex; gap: 15px; margin-top: 8px;">
+                            <label
+                                style="flex: 1; display: flex; align-items: center; gap: 10px; padding: 15px 20px; border: 2px solid #e8e8e8; border-radius: 12px; cursor: pointer; transition: all 0.3s;"
+                                id="typePersonal" onclick="selectAccountType('personal')">
+                                <input type="radio" name="accountType" value="personal" checked
+                                    style="accent-color: var(--secondary-color); width: 18px; height: 18px;">
+                                <i class="fa-solid fa-user" style="color: var(--secondary-color);"></i>
+                                <span style="font-weight: 600;">Bireysel</span>
+                            </label>
+                            <label
+                                style="flex: 1; display: flex; align-items: center; gap: 10px; padding: 15px 20px; border: 2px solid #e8e8e8; border-radius: 12px; cursor: pointer; transition: all 0.3s;"
+                                id="typeSTK" onclick="selectAccountType('stk')">
+                                <input type="radio" name="accountType" value="stk"
+                                    style="accent-color: #9b59b6; width: 18px; height: 18px;">
+                                <i class="fa-solid fa-building-ngo" style="color: #9b59b6;"></i>
+                                <span style="font-weight: 600;">STK / Dernek</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="firstName">Ad</label>
@@ -558,14 +581,36 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="submit-btn" id="registerBtn">
-                        <i class="fa-solid fa-user-plus"></i> Kayıt Ol
-                    </button>
+                    <!-- STK Specific Redirect Message -->
+                    <div id="stkFields"
+                        style="display: none; background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #e9ecef; text-align: center;">
+                        <div
+                            style="width: 60px; height: 60px; background: #f3e7ff; color: #9b59b6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px;">
+                            <i class="fa-solid fa-file-contract"></i>
+                        </div>
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Kurumsal Üyelik Başvurusu</h4>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">
+                            STK ve Dernek üyelikleri için kuruluş belgelerinin yüklenmesi ve detaylı doğrulama
+                            gerekmektedir. Lütfen kurumsal başvuru sayfasını kullanınız.
+                        </p>
+                        <a href="stk-kayit.html" class="submit-btn"
+                            style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; width: auto; padding: 12px 25px; background: #9b59b6;">
+                            <i class="fa-solid fa-arrow-right" style="margin-right: 8px;"></i> Başvuru Sayfasına Git
+                        </a>
+                    </div>
 
-                    <p class="terms-text">
-                        Kayıt olarak <a href="#">Kullanım Koşulları</a> ve <a href="#">Gizlilik Politikası</a>'nı kabul
-                        etmiş olursunuz.
-                    </p>
+                    <!-- Hide Register Button when STK is selected -->
+                    <div id="registerBtnContainer">
+                        <button type="submit" class="submit-btn" id="registerBtn">
+                            <i class="fa-solid fa-user-plus"></i> <span id="registerBtnText">Kayıt Ol</span>
+                        </button>
+
+                        <p class="terms-text">
+                            Kayıt olarak <a href="#">Kullanım Koşulları</a> ve <a href="#">Gizlilik Politikası</a>'nı
+                            kabul
+                            etmiş olursunuz.
+                        </p>
+                    </div>
                 </form>
             </div>
         </div>
@@ -654,7 +699,11 @@
                     showMessage('loginMessage', 'Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
 
                     setTimeout(() => {
-                        window.location.href = 'account.html';
+                        if (data.user.stk_status === 'approved') {
+                            window.location.href = 'stk-panel.html';
+                        } else {
+                            window.location.href = 'account.html';
+                        }
                     }, 1000);
                 } else {
                     showMessage('loginMessage', data.error || 'Giriş başarısız', 'error');
@@ -680,31 +729,72 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const btn = document.getElementById('registerBtn');
 
+            // Check if STK registration
+            const isSTK = document.querySelector('input[name="accountType"]:checked')?.value === 'stk';
+
             // Validate passwords match
             if (password !== confirmPassword) {
                 showMessage('registerMessage', 'Şifreler eşleşmiyor!', 'error');
                 return;
             }
 
+            // If STK, validate required fields
+            if (isSTK) {
+                const orgName = document.getElementById('orgName')?.value;
+                const orgType = document.getElementById('orgType')?.value;
+                const activityArea = document.getElementById('activityArea')?.value;
+
+                if (!orgName || !orgType || !activityArea) {
+                    showMessage('registerMessage', 'Lütfen tüm STK bilgilerini doldurun.', 'error');
+                    return;
+                }
+            }
+
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Kayıt yapılıyor...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + (isSTK ? 'Başvuru yapılıyor...' : 'Kayıt yapılıyor...');
 
             try {
-                const response = await fetch(`${API_BASE}/users/register`, {
+                let endpoint, bodyData;
+
+                if (isSTK) {
+                    // STK Registration
+                    endpoint = `${API_BASE}/stk/register-simple`;
+                    bodyData = {
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        password,
+                        orgName: document.getElementById('orgName').value,
+                        orgType: document.getElementById('orgType').value,
+                        activityArea: document.getElementById('activityArea').value,
+                        orgDescription: document.getElementById('orgDescription').value
+                    };
+                } else {
+                    // Normal User Registration
+                    endpoint = `${API_BASE}/users/register`;
+                    bodyData = { firstName, lastName, email, phone, password };
+                }
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ firstName, lastName, email, phone, password })
+                    body: JSON.stringify(bodyData)
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    showMessage('registerMessage', 'Kayıt başarılı! Giriş yapabilirsiniz.', 'success');
+                    if (isSTK) {
+                        showMessage('registerMessage', 'STK başvurunuz alındı! Admin onayı bekleniyor.', 'success');
+                    } else {
+                        showMessage('registerMessage', 'Kayıt başarılı! Giriş yapabilirsiniz.', 'success');
+                    }
 
                     setTimeout(() => {
                         switchTab('login');
                         document.getElementById('loginEmail').value = email;
-                    }, 1500);
+                    }, 2000);
                 } else {
                     showMessage('registerMessage', data.error || 'Kayıt başarısız', 'error');
                 }
@@ -713,7 +803,39 @@
             }
 
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Kayıt Ol';
+            btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> ' + (isSTK ? 'STK Başvurusu Yap' : 'Kayıt Ol');
+        }
+
+        // Account type selection styling and show/hide STK fields
+        function selectAccountType(type) {
+            const personalBox = document.getElementById('typePersonal');
+            const stkBox = document.getElementById('typeSTK');
+            const stkFields = document.getElementById('stkFields');
+            const registerBtnText = document.getElementById('registerBtnText');
+            const firstNameLabel = document.querySelector('label[for="firstName"]');
+            const lastNameLabel = document.querySelector('label[for="lastName"]');
+
+            // Reset styles
+            personalBox.style.borderColor = '#e8e8e8';
+            personalBox.style.background = 'white';
+            stkBox.style.borderColor = '#e8e8e8';
+            stkBox.style.background = 'white';
+
+            if (type === 'personal') {
+                personalBox.style.borderColor = 'var(--secondary-color)';
+                personalBox.style.background = '#fff8f3';
+                stkFields.style.display = 'none';
+                registerBtnText.textContent = 'Kayıt Ol';
+                if (firstNameLabel) firstNameLabel.textContent = 'Ad';
+                if (lastNameLabel) lastNameLabel.textContent = 'Soyad';
+            } else if (type === 'stk') {
+                stkBox.style.borderColor = '#9b59b6';
+                stkBox.style.background = '#f9f5fc';
+                stkFields.style.display = 'block';
+                registerBtnText.textContent = 'STK Başvurusu Yap';
+                if (firstNameLabel) firstNameLabel.textContent = 'Yetkili Adı';
+                if (lastNameLabel) lastNameLabel.textContent = 'Yetkili Soyadı';
+            }
         }
 
         // Check URL params for tab

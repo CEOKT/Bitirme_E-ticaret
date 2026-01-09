@@ -14,14 +14,237 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if this is a donation payment
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('donation') === 'true') {
+    const mode = urlParams.get('mode');
+
+    if (mode === 'donation' || mode === 'campaign-donation' || urlParams.get('donation') === 'true') {
         isDonationMode = true;
-        donationInfo = JSON.parse(localStorage.getItem('destifo_donation') || 'null');
+        let donationAmount = 0;
+        let donationTitle = '';
+        let donationImage = '';
+        let donationStkName = '';
+
+        // Handle different donation modes
+        if (mode === 'campaign-donation') {
+            // Campaign donation - user can choose amount
+            donationInfo = {
+                type: 'campaign',
+                campaignId: urlParams.get('campaignId'),
+                campaignTitle: urlParams.get('campaignTitle'),
+                campaignImage: urlParams.get('campaignImage'),
+                stkId: urlParams.get('stkId'),
+                stkName: urlParams.get('stkName'),
+                targetAmount: parseFloat(urlParams.get('targetAmount')) || 0,
+                price: 50 // Default donation amount, user can change
+            };
+            donationAmount = donationInfo.price;
+            donationTitle = donationInfo.campaignTitle;
+            donationImage = donationInfo.campaignImage;
+            donationStkName = donationInfo.stkName;
+
+            // Render campaign donation with amount selector
+            if (summaryItemsContainer) {
+                summaryItemsContainer.innerHTML = `
+                    <div class="summary-item" style="padding: 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <img src="${donationImage}" alt="${donationTitle}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;" onerror="this.src='images/placeholder-campaign.jpg'">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 5px;">❤️ Kampanya Bağışı</div>
+                                <div style="font-size: 14px; color: #636e72;">${donationTitle}</div>
+                                <div style="font-size: 13px; color: #764ba2; margin-top: 5px;">
+                                    <i class="fa-solid fa-hand-holding-heart"></i> ${donationStkName} adına
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <label style="font-weight: 600; color: #1e3a5f; margin-bottom: 10px; display: block;">Bağış Miktarı Seçin:</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                                <button type="button" class="amount-btn" data-amount="25" style="padding: 10px 20px; border: 2px solid #764ba2; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">25 TL</button>
+                                <button type="button" class="amount-btn active" data-amount="50" style="padding: 10px 20px; border: 2px solid #764ba2; background: #764ba2; color: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">50 TL</button>
+                                <button type="button" class="amount-btn" data-amount="100" style="padding: 10px 20px; border: 2px solid #764ba2; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">100 TL</button>
+                                <button type="button" class="amount-btn" data-amount="250" style="padding: 10px 20px; border: 2px solid #764ba2; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">250 TL</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-weight: 500;">Diğer:</span>
+                                <input type="number" id="custom-amount" placeholder="Tutar girin" min="1" style="padding: 10px 15px; border: 2px solid #dfe6e9; border-radius: 10px; width: 120px; font-size: 14px;">
+                                <span>TL</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add amount selection handlers
+                setTimeout(() => {
+                    document.querySelectorAll('.amount-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            document.querySelectorAll('.amount-btn').forEach(b => {
+                                b.style.background = 'white';
+                                b.style.color = '#764ba2';
+                                b.classList.remove('active');
+                            });
+                            this.style.background = '#764ba2';
+                            this.style.color = 'white';
+                            this.classList.add('active');
+
+                            const amount = parseFloat(this.dataset.amount);
+                            donationInfo.price = amount;
+                            document.getElementById('custom-amount').value = '';
+                            updateDonationTotals(amount);
+                        });
+                    });
+
+                    const customInput = document.getElementById('custom-amount');
+                    if (customInput) {
+                        customInput.addEventListener('input', function () {
+                            const amount = parseFloat(this.value) || 0;
+                            if (amount > 0) {
+                                document.querySelectorAll('.amount-btn').forEach(b => {
+                                    b.style.background = 'white';
+                                    b.style.color = '#764ba2';
+                                    b.classList.remove('active');
+                                });
+                                donationInfo.price = amount;
+                                updateDonationTotals(amount);
+                            }
+                        });
+                    }
+                }, 100);
+            }
+
+        } else if (mode === 'donation') {
+            // Product donation
+            donationInfo = {
+                type: 'product',
+                productId: urlParams.get('productId'),
+                productName: urlParams.get('productName'),
+                productImage: urlParams.get('productImage'),
+                price: parseFloat(urlParams.get('price')),
+                stkId: urlParams.get('stkId'),
+                stkName: urlParams.get('stkName')
+            };
+            donationAmount = donationInfo.price;
+            donationTitle = donationInfo.productName;
+            donationImage = donationInfo.productImage;
+            donationStkName = donationInfo.stkName;
+
+            // Render donation item in summary
+            if (summaryItemsContainer) {
+                summaryItemsContainer.innerHTML = `
+                    <div class="summary-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 15px; margin-bottom: 15px;">
+                        <img src="${donationImage}" alt="${donationTitle}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 5px;">🎁 Bağış Ürünü</div>
+                            <div style="font-size: 14px; color: #636e72;">${donationTitle}</div>
+                            <div style="font-size: 13px; color: #764ba2; margin-top: 5px;">
+                                <i class="fa-solid fa-hand-holding-heart"></i> ${donationStkName} adına
+                            </div>
+                        </div>
+                        <div style="font-weight: 700; color: #764ba2; font-size: 18px;">${donationAmount.toLocaleString('tr-TR')} TL</div>
+                    </div>
+                `;
+            }
+        } else {
+            donationInfo = JSON.parse(localStorage.getItem('destifo_donation') || 'null');
+            if (donationInfo) {
+                donationAmount = donationInfo.price || 0;
+            }
+        }
 
         if (!donationInfo) {
             alert('Bağış bilgisi bulunamadı.');
-            window.location.href = 'categories.html';
+            window.location.href = 'index.html';
             return;
+        }
+
+        // Helper function to update totals
+        function updateDonationTotals(amount) {
+            if (summarySubtotal) summarySubtotal.textContent = amount.toLocaleString('tr-TR') + ' TL';
+            if (summaryTotal) summaryTotal.textContent = amount.toLocaleString('tr-TR') + ' TL';
+            const donationSpan = document.getElementById('summary-donation');
+            if (donationSpan) donationSpan.textContent = amount.toLocaleString('tr-TR') + ' TL';
+        }
+
+        // Update totals
+        if (summarySubtotal) summarySubtotal.textContent = (donationInfo.price || 50).toLocaleString('tr-TR') + ' TL';
+        if (summaryDonation) {
+            summaryDonation.parentElement.innerHTML = '<span>Bağış Tutarı</span><span id="summary-donation">' + (donationInfo.price || 50).toLocaleString('tr-TR') + ' TL</span>';
+        }
+        if (summaryTotal) summaryTotal.textContent = (donationInfo.price || 50).toLocaleString('tr-TR') + ' TL';
+
+        // Hide address section for donations
+        const addressSection = document.querySelector('.address-section, #address-section');
+        if (addressSection) addressSection.style.display = 'none';
+
+        // Add purple theme styling
+        const headStyle = document.createElement('style');
+        headStyle.innerHTML = `
+            .payment-title { color: #6c5ce7; }
+            .btn-primary { 
+                background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+                box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+            }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+            }
+            .form-group:has(#address-title), 
+            .form-group:has(#address-city),
+            .form-group:has(#address-district),
+            .form-group:has(#address-neighborhood),
+            .form-group:has(#address-postal),
+            .form-group:has(#address-street),
+            .form-group:has(#address-building),
+            .form-group:has(#address-apartment),
+            .form-group:has(#address-note) { display: none !important; }
+        `;
+        document.head.appendChild(headStyle);
+
+        // Change button text
+        if (completeOrderBtn) {
+            completeOrderBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Bağışı Tamamla';
+        }
+
+    } else {
+        // Check if Cart contains only donations
+        if (typeof Cart !== 'undefined') {
+            const items = Cart.getItems();
+            if (items.length > 0 && items.every(i => i.isDonation === true)) {
+                console.log('Donation-only cart detected');
+                isDonationMode = true;
+
+                // Hide Address Fields immediately
+                const headStyle = document.createElement('style');
+                headStyle.innerHTML = `
+                    .payment-title:nth-of-type(2), 
+                    #address-title, #address-city, #address-district, 
+                    #address-neighborhood, #address-postal, #address-street, 
+                    #address-building, #address-apartment, #address-note,
+                    label[for="address-title"], label[for="address-city"],
+                    label[for="address-district"], label[for="address-neighborhood"],
+                    label[for="address-postal"], label[for="address-street"],
+                    label[for="address-building"], label[for="address-apartment"],
+                    label[for="address-note"] { display: none !important; }
+                    
+                    .form-group:has(#address-title), 
+                    .form-group:has(#address-city) { display: none !important; }
+                    
+                    /* Purple Theme */
+                    .payment-title { color: #6c5ce7; }
+                    .btn-primary { 
+                        background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+                        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+                    }
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+                    }
+                `;
+                document.head.appendChild(headStyle);
+
+                // Set donation flag for checkout
+                localStorage.setItem('destifo_is_donation_cart', 'true');
+            } else {
+                localStorage.removeItem('destifo_is_donation_cart');
+            }
         }
     }
 
@@ -646,8 +869,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     function loadDonationSummary() {
         if (!donationInfo) return;
 
-        const amount = donationInfo.amount;
-        const org = donationInfo.organization;
+        // Handle inconsistent property names (amount vs price, organization vs stkName)
+        const amount = donationInfo.amount || donationInfo.price || 0;
+        const org = donationInfo.organization || donationInfo.stkName || 'Bağış';
 
         summaryItemsContainer.innerHTML = `
             <div class="summary-item" style="display: flex; align-items: center; gap: 15px;">
@@ -687,11 +911,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (addressFormContainer) addressFormContainer.style.display = 'none';
         }
 
-        // Also hide via input parents to be sure
-        if (addressTitleInput) {
-            const formSection = addressTitleInput.closest('.payment-section') || addressTitleInput.closest('.col-md-6')?.parentElement;
-            if (formSection) formSection.style.display = 'none';
-        }
+        // Hide address fields specifically by ID or Class
+        const addressFields = [
+            'address-title', 'address-city', 'address-district',
+            'address-neighborhood', 'address-postal', 'address-street',
+            'address-building', 'address-apartment', 'address-note'
+        ];
+
+        addressFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                // Find closest form-group or similar container
+                const container = el.closest('.form-group') || el.closest('.col-md-6') || el.parentElement;
+                if (container) container.style.display = 'none';
+            }
+        });
+
+        // Also hide section headers if any remain visible
+        document.querySelectorAll('.payment-title').forEach(title => {
+            if (title.textContent.includes('Teslimat Adresi') || title.textContent.includes('Fatura')) {
+                title.style.display = 'none';
+            }
+        });
 
         // Update page title
         const pageTitle = document.querySelector('.payment-title');
@@ -770,7 +1011,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         summarySubtotal.textContent = subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
         summaryDonation.textContent = donation.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
-        summaryTotal.textContent = subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+        updateTotalDisplay(subtotal);
+
+        // Upsell Logic removed
+        // Upsell logic removed
+    }
+
+    function updateTotalDisplay(amount) {
+        const summaryTotal = document.getElementById('summary-total');
+        if (summaryTotal) {
+            summaryTotal.textContent = amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+        }
     }
 
     // Handle Order Completion - ROBUST VERSION
@@ -838,14 +1089,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('4. Mod: BAĞIŞ');
 
                 // Donation Mode Setup
-                totalPrice = donationInfo.amount;
-                paidPrice = donationInfo.amount;
-                donationAmount = donationInfo.amount; // 100% is donation
+                const amount = donationInfo.amount || donationInfo.price || 0;
+                const org = donationInfo.organization || donationInfo.stkName || 'Bağış';
+
+                totalPrice = amount;
+                paidPrice = amount;
+                donationAmount = amount; // 100% is donation
 
                 // Create virtual basket item
                 basketItems = [{
                     id: 'DON-' + Date.now(),
-                    name: `Bağış: ${donationInfo.organization}`,
+                    name: `Bağış: ${org}`,
                     category: 'Donation',
                     isDonation: true,
                     itemType: 'VIRTUAL',
@@ -866,18 +1120,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Normal Cart Setup
                 console.log('   Sepet öğeleri alınıyor...');
-                const cartItems = window.CartAPI ? await window.CartAPI.getItems() : [];
+                // Use a local variable to hold Fresh items from storage
+                let storedItems = window.CartAPI ? await window.CartAPI.getItems() : [];
 
-                if (cartItems.length === 0) {
+                if (storedItems.length === 0) {
                     throw new Error('Sepetiniz boş');
                 }
 
-                // Calculate totals
-                const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                // In normal flow, donation is 5% of subtotal (added on top or included? Based on logic: totalPrice = subtotal + donation)
-                // Assuming previous logic: totalPrice = subtotal + donationAmount
-                const calculatedDonation = subtotal * 0.05;
+                // Calculate totals from stored products
+                const subtotal = storedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+                // Donation amount from products (5% currently, can be dynamic)
+                let calculatedDonation = subtotal * 0.05;
+
+                // Total Price for Payment
                 totalPrice = subtotal + calculatedDonation;
                 paidPrice = totalPrice;
                 donationAmount = calculatedDonation;
@@ -885,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('   Tutarlar: Ara=' + subtotal + ', Toplam=' + totalPrice);
 
                 // Build basket items
-                basketItems = cartItems.map(item => ({
+                basketItems = storedItems.map(item => ({
                     id: item.product_id?.toString() || item.id?.toString(),
                     productId: item.product_id || item.id,
                     variantId: item.variant_id,
