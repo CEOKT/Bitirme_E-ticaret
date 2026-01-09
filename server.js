@@ -918,6 +918,44 @@ app.get('/api/products', (req, res) => {
     }
 });
 
+// Get charity products (100% donation - Trendyol pet food)
+app.get('/api/products/charity', (req, res) => {
+    try {
+        const products = db.prepare(`
+            SELECT p.*, mc.name as main_category_name, sc.name as sub_category_name 
+            FROM products p 
+            LEFT JOIN main_categories mc ON p.main_category_id = mc.id 
+            LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
+            WHERE p.donation_percent = 100
+            ORDER BY p.id DESC
+        `).all();
+
+        const result = products.map(product => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            oldPrice: product.old_price,
+            image: product.image,
+            description: product.description,
+            mainCategoryId: product.main_category_id,
+            mainCategoryName: product.main_category_name,
+            subCategoryId: product.sub_category_id,
+            subCategoryName: product.sub_category_name,
+            brand: product.brand,
+            stock: product.stock,
+            rating: product.rating,
+            donationPercent: product.donation_percent,
+            donationOrg: product.donation_org,
+            isFeatured: product.is_featured
+        }));
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // Get products by main category ID
 app.get('/api/products/category/:categoryId', (req, res) => {
     try {

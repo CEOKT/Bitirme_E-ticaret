@@ -19,23 +19,13 @@ async function loadCharityProducts(containerId = 'charityGrid') {
     // BUT checking index.html earlier: id="loading-charity" was used in the new section.
 
     try {
-        const response = await fetch(`${API_BASE}/products?limit=100`);
-        if (!response.ok) throw new Error('Products fetch failed');
+        // Use dedicated charity products endpoint
+        const response = await fetch(`${API_BASE}/products/charity`);
+        if (!response.ok) throw new Error('Charity products fetch failed');
 
-        const products = await response.json();
+        const charityProducts = await response.json();
 
-        // DEBUG: Show first product structure
-        if (products.length > 0) {
-            console.log('📦 First product sample:', products[0]);
-        }
-
-        // FILTER: Only show charity products (100% donation - Trendyol pet food)
-        // API uses camelCase: donationPercent
-        const charityProducts = products.filter(p =>
-            p.donationPercent === 100
-        );
-
-        console.log(`🔍 Total products: ${products.length}, Charity products: ${charityProducts.length}`);
+        console.log(`🔍 Charity products loaded: ${charityProducts.length}`);
 
         const displayProducts = charityProducts.slice(0, 24); // Limit to 24
         globalCharityProducts = displayProducts;
