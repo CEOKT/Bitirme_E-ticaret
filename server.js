@@ -83,19 +83,29 @@ function authenticateToken(req, res, next) {
         return res.status(401).json({ error: 'Token gerekli' });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(403).json({ error: 'Geçersiz token' });
         }
 
-        // Fetch full user from DB to satisfy role checks
-        const dbUser = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
-        if (!dbUser) {
-            return res.status(403).json({ error: 'Kullanıcı bulunamadı' });
+        // Check if this is an admin token
+        if (decoded.role === 'admin') {
+            // Admin token - verify admin exists
+            const admin = db.prepare('SELECT * FROM admins WHERE id = ?').get(decoded.id);
+            if (!admin) {
+                return res.status(403).json({ error: 'Admin bulunamadı' });
+            }
+            req.user = { id: admin.id, email: admin.username, role: 'admin' };
+            next();
+        } else {
+            // Regular user token - fetch from users table
+            const dbUser = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.id);
+            if (!dbUser) {
+                return res.status(403).json({ error: 'Kullanıcı bulunamadı' });
+            }
+            req.user = dbUser;
+            next();
         }
-
-        req.user = dbUser;
-        next();
     });
 }
 
@@ -141,6 +151,40 @@ function getOrCreateSubCategory(name, mainCategoryId) {
 // =============================================
 // USER AUTHENTICATION API
 // =============================================
+
+// Admin login
+app.post('/api/admin/login', (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Check admins table first
+        const admin = db.prepare('SELECT * FROM admins WHERE username = ? AND password = ?').get(username, password);
+
+        if (!admin) {
+            return res.status(401).json({ success: false, error: 'Geçersiz kullanıcı adı veya şifre' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: admin.id, email: admin.username, role: 'admin' },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            success: true,
+            token,
+            admin: {
+                id: admin.id,
+                name: admin.username,
+                role: 'admin'
+            }
+        });
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 // User registration
 app.post('/api/users/register', (req, res) => {
@@ -717,35 +761,9 @@ app.post('/api/admin/delete-stk/:id', authenticateToken, (req, res) => {
 // Admin Approve STK
 app.post('/api/admin/approve-stk/:id', authenticateToken, (req, res) => {
     try {
-        // Check if admin (Assuming req.user is populated by middleware and we check DB for role)
-        const requestor = db.prepare('SELECT role FROM users WHERE id = ?').get(req.user.id);
-        const adminCheck = db.prepare('SELECT role FROM admins WHERE username = ?').get(req.user.email) || requestor; // Fallback to user table check if admins table used separately
-
-        // Simplified Admin check: In this project, main admin is in 'admins' table or 'users' table with role='admin'
-        // Let's assume the token payload indicates role or check 'admins' table
-        // For robustness, let's allow 'admin' role from 'users' table too
-
-        const isAdmin = (requestor && requestor.role === 'admin') || (req.user.email === 'admin'); // Simple check
-
-        if (!isAdmin) {
-            // Let's check the special admins table too
-            // Actually, the token doesn't seem to differentiate auth source easily without lookup
-            // Assume robust check:
-            // If the system uses separate tables for admins, we need to know who logged in. 
-            // Current middleware verify(token) -> req.user. 
-        }
-
-        // For this specific request, let's assume if they have a valid token they are an authorized user, 
-        // We enforce role check:
-        const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.user.id);
-
-        // Allow 'admin' role or 'superadmin' from admins table (if they share token logic, which they might not)
-        // Given previous code, let's assume 'admin' role in users table is key.
-
-        // Actually earlier code added 'role' column to users.
-        if (user?.role !== 'admin' && req.user.email !== 'admin') { // Fallback for hardcoded admin
-            // return res.status(403).json({ error: 'Yetkisiz işlem' });
-            // For now, let's proceed to ensure code works for the demo.
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Yetkisiz işlem. Sadece adminler STK onaylayabilir.' });
         }
 
         const userId = req.params.id;
